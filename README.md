@@ -46,10 +46,10 @@ We provide some test data in `test` dir. So you can download the BAM files and f
 
 ## Contents
 - [0. A general analysis pipeline](#0-a-general-analysis-pipeline)
-- [1. From `BAM` to `mpileup`](#1-from--bam--to--mpileup-)
-- [2. From `mpileup` to `pmat`](#2-from--mpileup--to--pmat-)
-- [3. Merge `pmat` file into `mpmat`](#3-merge--pmat--file-into--mpmat-)
-- [4. Run enrichment test with `mpmat` file](#4-run-enrichment-test-with--mpmat--file)
+- [1. From .BAM to .mpileup file](#1-from-bam-to-mpileup-file)
+- [2. From .mpileup to .pmat file](#2-from-mpileup-to-pmat-file)
+- [3. Merge .pmat file into .mpmat file](#3-merge-pmat-file-into-mpmat-file)
+- [4. Run enrichment test with .mpmat file](#4-run-enrichment-test-with-mpmat-file)
 - [5. Select signicicant regions and run sgRNA alignment](#5-select-signicicant-regions-and-run-sgrna-alignment)
 - [6. Plot sgRNA alignment results](#6-plot-sgrna-alignment-results)
 
@@ -59,13 +59,13 @@ We provide some test data in `test` dir. So you can download the BAM files and f
 When you obtain the `BAM` files, you can follow this analysis pipeline to get your final off-target list and make a sgRNA alignment plot.
 
 
-## 1. From `BAM` to `mpileup`
+## 1. From .BAM to .mpileup file
 
-## 2. From `mpileup` to `pmat`
+## 2. From .mpileup to .pmat file
 
-## 3. Merge `pmat` file into `mpmat`
+## 3. Merge .pmat file into .mpmat file
 
-## 4. Run enrichment test with `mpmat` file 
+## 4. Run enrichment test with .mpmat file 
 
 ## 5. Select signicicant regions and run sgRNA alignment
 
