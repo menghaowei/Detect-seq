@@ -1,5 +1,5 @@
 # What is Detect-seq?
-Detect-seq is short for _d_U-d_et_ection _e_nabled by _C_ to _T_ transition during _seq_uencing. 
+Detect-seq is short for ***dU-detection enabled by C to T transition during sequencing***. 
 
 This method performs the genome-wide identification of CBE-induced off-targets in cellular context. And Detect-seq is based on chemical labeling and enrichment of the direct editing products of CBE, which can trace the in vivo editing events in an unbiased manner.
 
