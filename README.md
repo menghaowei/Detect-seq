@@ -39,14 +39,37 @@ We are going to distribute Detect-seq tools on `pip`, which will be coming soon!
 
 - - - - - - 
 
+
 # The best practice of Detect-seq analysis
 
 We provide some test data in `test` dir. So you can download the BAM files and find Detect-seq signal with the following steps.
+
+## Contents
+- [0. A general analysis pipeline](#0-a-general-analysis-pipeline)
+- [1. From `BAM` to `mpileup`](#1-from--bam--to--mpileup-)
+- [2. From `mpileup` to `pmat`](#2-from--mpileup--to--pmat-)
+- [3. Merge `pmat` file into `mpmat`](#3-merge--pmat--file-into--mpmat-)
+- [4. Run enrichment test with `mpmat` file](#4-run-enrichment-test-with--mpmat--file)
+- [5. Select signicicant regions and run sgRNA alignment](#5-select-signicicant-regions-and-run-sgrna-alignment)
+- [6. Plot sgRNA alignment results](#6-plot-sgrna-alignment-results)
 
 ## 0. A general analysis pipeline
 ![](./image/bioinfo_analysis_pipeline.png)
 
 When you obtain the `BAM` files, you can follow this analysis pipeline to get your final off-target list and make a sgRNA alignment plot.
+
+
+## 1. From `BAM` to `mpileup`
+
+## 2. From `mpileup` to `pmat`
+
+## 3. Merge `pmat` file into `mpmat`
+
+## 4. Run enrichment test with `mpmat` file 
+
+## 5. Select signicicant regions and run sgRNA alignment
+
+## 6. Plot sgRNA alignment results
 
 
 ## Tool list
