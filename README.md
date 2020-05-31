@@ -1,18 +1,53 @@
-# Detect-seq tools
+# What is Detect-seq?
+Detect-seq is short for _d_U-d_et_ection _e_nabled by _C_ to _T_ transition during _seq_uencing. 
 
-Final edition, 2020-05-15 By MENG Haowei
+This method performs the genome-wide identification of CBE-induced off-targets in cellular context. And Detect-seq is based on chemical labeling and enrichment of the direct editing products of CBE, which can trace the in vivo editing events in an unbiased manner.
+
+This techniques is developed by YiLab @ School of Life Sciences, Peking University, Beijing, China.
 
 
-## Download and usage
+# What is Detect-seq tools?
+Detect-seq tools is a collection of Python scripts, which is desigened for the analysis of Detect-seq data. The tools can help to perform Detect-seq analysis including but are not limited to off-targets finding, sgRNA alignment, and result visualization.
+
+
+# Reuqirement, Download and Usage
+
+## 1. Requirement 
+
+### Python version
+- Python = 2.7x
+
+### Necessary Python packages
+- Biopython >= 2.2.4
+- pysam >= 0.15
+- pandas >= 0.24.2
+- numpy >= 1.16.2
+- matplotlib >= 1.74
+- scikit-learn >= 0.20.3
+
+## 2. Download and usage
 
 All Python code in this repertory can be directly downloaded and used like:
 
 ```
 python + sepecific_cmd 
-
 ```
-## General analysis pipeline
+
+## 3. Future 
+We are going to distribute Detect-seq tools on `pip`, which will coming soon! 
+
+
+- - - - - - 
+
+# The best practice of Detect-seq analysis
+
+We provide some test data in `test` dir. So you can download the BAM files and find Detect-seq signal with the following steps.
+
+## 0. A general analysis pipeline
 ![](./image/bioinfo_analysis_pipeline.png)
+
+When you obtaine the `BAM` files, you can follow this analysis pipeline to get your final off-target list and make a sgRNA alignment plot.
+
 
 ## Tool list
 
@@ -41,15 +76,4 @@ python + sepecific_cmd
 ![art-plot](./image/art-plot.png)
 
 
-## Requirement 
 
-### Python version
-- Python = 2.7x
-
-### Necessary Python packages
-- Biopython >= 2.2.4
-- pysam >= 0.15
-- pandas >= 0.24.2
-- numpy >= 1.16.2
-- matplotlib >= 1.74
-- scikit-learn >= 0.20.3
