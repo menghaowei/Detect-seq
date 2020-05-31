@@ -1,0 +1,242 @@
+{
+    "count_dict": {
+        "chr1": {
+            "all_align_count": 13864265, 
+            "all_filter_count": 1167, 
+            "mut_align_count": 1925977, 
+            "non_mut_align_count": 11937121, 
+            "other_high_mismatch_count": 0, 
+            "query_high_mismatch_count": 72, 
+            "total_high_mismatch_count": 1095
+        }, 
+        "chr10": {
+            "all_align_count": 6250906, 
+            "all_filter_count": 579, 
+            "mut_align_count": 875868, 
+            "non_mut_align_count": 5374459, 
+            "other_high_mismatch_count": 0, 
+            "query_high_mismatch_count": 30, 
+            "total_high_mismatch_count": 549
+        }, 
+        "chr11": {
+            "all_align_count": 5915292, 
+            "all_filter_count": 453, 
+            "mut_align_count": 819940, 
+            "non_mut_align_count": 5094899, 
+            "other_high_mismatch_count": 0, 
+            "query_high_mismatch_count": 17, 
+            "total_high_mismatch_count": 436
+        }, 
+        "chr12": {
+            "all_align_count": 6036506, 
+            "all_filter_count": 587, 
+            "mut_align_count": 821798, 
+            "non_mut_align_count": 5214121, 
+            "other_high_mismatch_count": 0, 
+            "query_high_mismatch_count": 20, 
+            "total_high_mismatch_count": 567
+        }, 
+        "chr13": {
+            "all_align_count": 6354163, 
+            "all_filter_count": 381, 
+            "mut_align_count": 845860, 
+            "non_mut_align_count": 5507922, 
+            "other_high_mismatch_count": 0, 
+            "query_high_mismatch_count": 18, 
+            "total_high_mismatch_count": 363
+        }, 
+        "chr14": {
+            "all_align_count": 4056680, 
+            "all_filter_count": 337, 
+            "mut_align_count": 551229, 
+            "non_mut_align_count": 3505114, 
+            "other_high_mismatch_count": 0, 
+            "query_high_mismatch_count": 20, 
+            "total_high_mismatch_count": 317
+        }, 
+        "chr15": {
+            "all_align_count": 3506552, 
+            "all_filter_count": 300, 
+            "mut_align_count": 487382, 
+            "non_mut_align_count": 3018870, 
+            "other_high_mismatch_count": 0, 
+            "query_high_mismatch_count": 27, 
+            "total_high_mismatch_count": 273
+        }, 
+        "chr16": {
+            "all_align_count": 3687897, 
+            "all_filter_count": 410, 
+            "mut_align_count": 572433, 
+            "non_mut_align_count": 3115054, 
+            "other_high_mismatch_count": 0, 
+            "query_high_mismatch_count": 14, 
+            "total_high_mismatch_count": 396
+        }, 
+        "chr17": {
+            "all_align_count": 3978317, 
+            "all_filter_count": 387, 
+            "mut_align_count": 568290, 
+            "non_mut_align_count": 3409640, 
+            "other_high_mismatch_count": 0, 
+            "query_high_mismatch_count": 29, 
+            "total_high_mismatch_count": 358
+        }, 
+        "chr18": {
+            "all_align_count": 3255075, 
+            "all_filter_count": 257, 
+            "mut_align_count": 452848, 
+            "non_mut_align_count": 2801970, 
+            "other_high_mismatch_count": 0, 
+            "query_high_mismatch_count": 10, 
+            "total_high_mismatch_count": 247
+        }, 
+        "chr19": {
+            "all_align_count": 2332627, 
+            "all_filter_count": 413, 
+            "mut_align_count": 342174, 
+            "non_mut_align_count": 1990040, 
+            "other_high_mismatch_count": 0, 
+            "query_high_mismatch_count": 23, 
+            "total_high_mismatch_count": 390
+        }, 
+        "chr2": {
+            "all_align_count": 10786390, 
+            "all_filter_count": 794, 
+            "mut_align_count": 1464162, 
+            "non_mut_align_count": 9321434, 
+            "other_high_mismatch_count": 0, 
+            "query_high_mismatch_count": 52, 
+            "total_high_mismatch_count": 742
+        }, 
+        "chr20": {
+            "all_align_count": 2791093, 
+            "all_filter_count": 314, 
+            "mut_align_count": 413509, 
+            "non_mut_align_count": 2377270, 
+            "other_high_mismatch_count": 0, 
+            "query_high_mismatch_count": 17, 
+            "total_high_mismatch_count": 297
+        }, 
+        "chr21": {
+            "all_align_count": 2185206, 
+            "all_filter_count": 235, 
+            "mut_align_count": 328181, 
+            "non_mut_align_count": 1856790, 
+            "other_high_mismatch_count": 0, 
+            "query_high_mismatch_count": 11, 
+            "total_high_mismatch_count": 224
+        }, 
+        "chr22": {
+            "all_align_count": 1683603, 
+            "all_filter_count": 158, 
+            "mut_align_count": 261865, 
+            "non_mut_align_count": 1421580, 
+            "other_high_mismatch_count": 0, 
+            "query_high_mismatch_count": 11, 
+            "total_high_mismatch_count": 147
+        }, 
+        "chr3": {
+            "all_align_count": 9272129, 
+            "all_filter_count": 659, 
+            "mut_align_count": 1323144, 
+            "non_mut_align_count": 7948326, 
+            "other_high_mismatch_count": 0, 
+            "query_high_mismatch_count": 52, 
+            "total_high_mismatch_count": 607
+        }, 
+        "chr4": {
+            "all_align_count": 8106389, 
+            "all_filter_count": 562, 
+            "mut_align_count": 1115310, 
+            "non_mut_align_count": 6990517, 
+            "other_high_mismatch_count": 0, 
+            "query_high_mismatch_count": 34, 
+            "total_high_mismatch_count": 528
+        }, 
+        "chr5": {
+            "all_align_count": 8457280, 
+            "all_filter_count": 615, 
+            "mut_align_count": 1148451, 
+            "non_mut_align_count": 7308214, 
+            "other_high_mismatch_count": 0, 
+            "query_high_mismatch_count": 47, 
+            "total_high_mismatch_count": 568
+        }, 
+        "chr6": {
+            "all_align_count": 8913064, 
+            "all_filter_count": 604, 
+            "mut_align_count": 1195638, 
+            "non_mut_align_count": 7716822, 
+            "other_high_mismatch_count": 0, 
+            "query_high_mismatch_count": 34, 
+            "total_high_mismatch_count": 570
+        }, 
+        "chr7": {
+            "all_align_count": 7549170, 
+            "all_filter_count": 750, 
+            "mut_align_count": 1032708, 
+            "non_mut_align_count": 6515712, 
+            "other_high_mismatch_count": 0, 
+            "query_high_mismatch_count": 39, 
+            "total_high_mismatch_count": 711
+        }, 
+        "chr8": {
+            "all_align_count": 5938473, 
+            "all_filter_count": 482, 
+            "mut_align_count": 800801, 
+            "non_mut_align_count": 5137190, 
+            "other_high_mismatch_count": 0, 
+            "query_high_mismatch_count": 33, 
+            "total_high_mismatch_count": 449
+        }, 
+        "chr9": {
+            "all_align_count": 5074684, 
+            "all_filter_count": 433, 
+            "mut_align_count": 700356, 
+            "non_mut_align_count": 4373895, 
+            "other_high_mismatch_count": 0, 
+            "query_high_mismatch_count": 24, 
+            "total_high_mismatch_count": 409
+        }, 
+        "chrM": {
+            "all_align_count": 361378, 
+            "all_filter_count": 5, 
+            "mut_align_count": 56939, 
+            "non_mut_align_count": 304434, 
+            "other_high_mismatch_count": 0, 
+            "query_high_mismatch_count": 4, 
+            "total_high_mismatch_count": 1
+        }, 
+        "chrX": {
+            "all_align_count": 8270299, 
+            "all_filter_count": 682, 
+            "mut_align_count": 1091786, 
+            "non_mut_align_count": 7177831, 
+            "other_high_mismatch_count": 0, 
+            "query_high_mismatch_count": 108, 
+            "total_high_mismatch_count": 574
+        }, 
+        "chrY": {
+            "all_align_count": 61183, 
+            "all_filter_count": 78, 
+            "mut_align_count": 33909, 
+            "non_mut_align_count": 27196, 
+            "other_high_mismatch_count": 0, 
+            "query_high_mismatch_count": 0, 
+            "total_high_mismatch_count": 78
+        }
+    }, 
+    "meta_data": {
+        "create_date": "2020-01-01 00:00:01", 
+        "filter_log": "NULL", 
+        "input_BAM": "NULL", 
+        "other_mismatch_max_cutoff": 12, 
+        "out_json": "NULL", 
+        "query_mutation_max_cutoff": 16, 
+        "query_mutation_min_cutoff": 2, 
+        "query_mutation_type": "CT,GA", 
+        "reference": "NULL", 
+        "threads": 24, 
+        "total_mismatch_max_cutoff": 24
+    }
+}

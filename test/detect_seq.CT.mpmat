@@ -1,4 +1,3 @@
-chr_name	region_start	region_end	region_site_num	region_mut_site_num	region_SNP_mut_num	region_site_index	mut_base_num	cover_base_num	mut_ratio	SNP_ann	tandem_info
 chr1	1302731	1302732	2	2	0	chr1_1302731_CT,chr1_1302732_CT	1,1	3,3	0.33333,0.33333	False,False	0,0
 chr1	1302854	1302854	1	1	0	chr1_1302854_CT	1	2	0.5	False	0
 chr1	1303270	1303276	3	2	0	chr1_1303270_CT,chr1_1303273_C.,chr1_1303276_CT	1,0,1	2,2,2	0.5,0,0.5	False,False,False	0,0,0
