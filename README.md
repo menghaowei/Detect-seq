@@ -12,18 +12,15 @@ Detect-seq tools are a collection of Python scripts, which is designed for the a
 
 # Requirement, Download, and Usage
 
-## 1. Requirement 
+## 1. Environment
+> only test on linux
 
-### Python version
-- Python = 2.7x
+```
+git clone https://github.com/menghaowei/Detect-seq.git
+cd Detect-seq
+conda env create -f conda-env.yaml
+```
 
-### Necessary Python packages
-- Biopython >= 2.2.4
-- pysam >= 0.15
-- pandas >= 0.24.2
-- numpy >= 1.16.2
-- matplotlib >= 1.74
-- scikit-learn >= 0.20.3
 
 ## 2. Download and usage
 
