@@ -1,3 +1,7 @@
+# Detect-seq
+
+A chemical labeling and biotin pulldown approach for the unbiased, genome-wide off-target evaluation of programmable cytosine base editors
+
 # Update log
 
 1. 2021-07-01 first commit. By MENG Haowei
