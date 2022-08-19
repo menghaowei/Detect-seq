@@ -1,14 +1,34 @@
+# Update log
+
+1. 2021-07-01 first commit. By MENG Haowei
+2. 2022-08-19 update version. By ZHAO Huanan
+
 # What is Detect-seq?
-Detect-seq is a method performs the genome-wide identification of CBE-induced off-targets in the cellular context. 
 
-This technique is developed by YiLab @ School of Life Sciences, Peking University, Beijing, China.
+Detect-seq aims to find all reliable CBE/DdCBE induced off-target editings on the whole genome.
 
-For full informations please click [www.detect-seq.com](http://www.detect-seq.com)
+This set of experiments and analytical procedures were reported by the YiLab @ Peking University in 2021.
+
+Find more at  [www.detect-seq.com](http://www.detect-seq.com)
+
+# What is Detect-seq tool?
 
 
-# What is Detect-seq tools?
-Detect-seq tools are a collection of Python scripts, which is designed for the analysis of Detect-seq data. The tools can help to perform Detect-seq analysis including but are not limited to off-targets finding sgRNA alignment, and visualization of results.
+Detect-seq tool can help find off-targets editings, sgRNA alignment, and performing visualization of results. One can carry on Detect-seq experiments and then analyze Detect-seq data with the Detect-seq tool.
 
+# Citation
+
+Please cite our publications if Detect-seq is used in your research.
+
+```
+# CBE & Detect-seq
+1. Lei, Z., Meng, H., Lv, Z., Liu, M., Zhao, H., Wu, H., ... & Yi, C. (2021). Detect-seq reveals out-of-protospacer editing and target-strand editing by cytosine base editors. Nature Methods, 18(6), 643-651.
+# DdCBE & Detect-seq
+2. Lei, Z., Meng, H., Liu, L., Zhao, H., Rao, X., Yan, Y., ... & Yi, C. (2022). Mitochondrial base editor induces substantial nuclear off-target mutations. Nature, 606(7915), 804-811.
+  
+```
+
+ 
 
 # Requirement, Download, and Usage
 
@@ -19,23 +39,11 @@ Detect-seq tools are a collection of Python scripts, which is designed for the a
 git clone https://github.com/menghaowei/Detect-seq.git
 cd Detect-seq
 conda env create -f conda-env.yaml
+
+conda activate DetectSeq
 ```
 
-
-## 2. Download and usage
-
-All Python code in this repertory can be directly downloaded and used like:
-
-```
-python + sepecific_cmd 
-```
-
-## 3. Future 
-We are going to distribute Detect-seq tools on `pip`, which will be coming soon! 
-
-
-- - - - - - 
-
+- - - - - -
 
 # The best practice of Detect-seq analysis
 
@@ -51,6 +59,7 @@ We provide some test data in the `test` dir. So you can download the BAM files a
 - [6. Plot sgRNA alignment results](#6-plot-sgrna-alignment-results)
 
 ## 0. A general analysis pipeline
+
 When you obtain the `BAM` files, you can follow this analysis pipeline to get your final off-target list and make a sgRNA alignment plot.
 
 ![](./image/bioinfo_analysis_pipeline.png)
