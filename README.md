@@ -5,7 +5,7 @@ A chemical labeling and biotin pulldown approach for the unbiased, genome-wide o
 # Update log
 
 1. 2021-07-01 first commit. By MENG Haowei
-2. 2022-08-19 update version. Codes and algorithm design By MENG Haowei. Website repository and document management By ZHAO Huanan.
+2. 2022-08-19 update version. Codes and algorithm design By MENG Haowei. Website, repository and document management By ZHAO Huanan.
 
 # What is Detect-seq?
 
