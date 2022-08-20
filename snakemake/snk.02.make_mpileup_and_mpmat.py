@@ -6,9 +6,6 @@
 # E-mail meng_howard@126.com
 # Detect-seq BE4max-VEGFA DdCBE-ND6
 #####################################################################################################
-# run on legend
-# /home/menghw/menghw_HD/Detect_nat_protocol
-
 # --------------------------------------------------------------->>>>>>>
 # pipeline
 # --------------------------------------------------------------->>>>>>>
@@ -20,20 +17,19 @@
 # --------------------------------------------------------------->>>>>>>
 # software
 # --------------------------------------------------------------->>>>>>>
-hisat3n = "/home/menghw/miniconda3/envs/DetectSeq/bin/hisat3n"
+hisat3n = "/your_conda_path/envs/DetectSeq/bin/hisat3n"
 
-PICARD = "/home/menghw/software/picard.jar"
-JAVA = "/home/menghw/miniconda3/bin/java"
+PICARD = "/your_app_path/picard.jar"
+JAVA = "/your_conda_path/bin/java"
 
 # --------------------------------------------------------------->>>>>>>
 # index and files
 # --------------------------------------------------------------->>>>>>>
-HISAT_3N_HG38_IDX = "/home/menghw/menghw_HD/Detect_nat_protocol/reference/hisat3n_hg38_CT/hg38_only_chromosome.fa"
+HISAT_3N_HG38_IDX = "/your_ref_path/reference/hisat3n_hg38_CT/hg38_only_chromosome.fa"
 
-BWA_HG38_IDX = "/home/menghw/menghw_HD/Detect_nat_protocol/reference/bwa_hg38/hg38_only_chromosome.fa"
+BWA_HG38_IDX = "/your_ref_path/reference/bwa_hg38/hg38_only_chromosome.fa"
 
-HG38_FA = "/home/menghw/menghw_HD/Detect_nat_protocol/reference/hisat3n_hg38_CT/hg38_only_chromosome.fa"
-
+HG38_FA = "/your_ref_path/reference/hisat3n_hg38_CT/hg38_only_chromosome.fa"
 
 # rm INDEL info 
 # if you don't have vcf file, please omit this
@@ -74,9 +70,12 @@ rule bam_to_pmat:
     log:
         "pmat_and_mpmat/{sample}_hg38_merge_sort_rmdup.MAPQ20.bam2pmat.log"
     shell:
-        "python ./bin/bam2pmat-V01.py -i {input.bam} -r {HG38_FA} -o {output} -p 20 \
+        """
+        python ./bin/bam2pmat-V01.py -i {input.bam} -r {HG38_FA} -o {output} -p 20 \
         --out_format pmat --bed_like_format True --mut_type ALL --block_size 100000 \
-        --cover_num_cutoff 0 --mut_num_cutoff 0 --mut_ratio_cutoff 0 --keep_temp_file False --out_header False > {log}  2>&1"
+        --cover_num_cutoff 0 --mut_num_cutoff 0 --mut_ratio_cutoff 0 --keep_temp_file False \
+        --out_header False > {log}  2>&1
+        """
 
 
 rule pigz_pmat_file:

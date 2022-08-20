@@ -6,9 +6,6 @@
 # E-mail meng_howard@126.com
 # Detect-seq BE4max-VEGFA DdCBE-ND6
 #####################################################################################################
-# run on legend
-# /home/menghw/menghw_HD/Detect_nat_protocol
-
 # --------------------------------------------------------------->>>>>>>
 # pipeline
 # --------------------------------------------------------------->>>>>>>
@@ -20,19 +17,19 @@
 # --------------------------------------------------------------->>>>>>>
 # software
 # --------------------------------------------------------------->>>>>>>
-hisat3n = "/home/menghw/miniconda3/envs/DetectSeq/bin/hisat3n"
+hisat3n = "/your_conda_path/envs/DetectSeq/bin/hisat3n"
 
-PICARD = "/home/menghw/software/picard.jar"
-JAVA = "/home/menghw/miniconda3/bin/java"
+PICARD = "/your_app_path/picard.jar"
+JAVA = "/your_conda_path/bin/java"
 
 # --------------------------------------------------------------->>>>>>>
 # index and files
 # --------------------------------------------------------------->>>>>>>
-HISAT_3N_HG38_IDX = "/home/menghw/menghw_HD/Detect_nat_protocol/reference/hisat3n_hg38_CT/hg38_only_chromosome.fa"
+HISAT_3N_HG38_IDX = "/your_ref_path/reference/hisat3n_hg38_CT/hg38_only_chromosome.fa"
 
-BWA_HG38_IDX = "/home/menghw/menghw_HD/Detect_nat_protocol/reference/bwa_hg38/hg38_only_chromosome.fa"
+BWA_HG38_IDX = "/your_ref_path/reference/bwa_hg38/hg38_only_chromosome.fa"
 
-HG38_FA = "/home/menghw/menghw_HD/Detect_nat_protocol/reference/hisat3n_hg38_CT/hg38_only_chromosome.fa"
+HG38_FA = "/your_ref_path/reference/hisat3n_hg38_CT/hg38_only_chromosome.fa"
 
 # --------------------------------------------------------------->>>>>>>
 # vars
@@ -79,14 +76,6 @@ rule cutadapt:
 # ------------------------------------------------------------------------------------------>>>>>>>>>>
 # hisat3n mapping 
 # ------------------------------------------------------------------------------------------>>>>>>>>>>
-# test 1
-# hisat3n reference/hisat3n_hg38 -p 20 -1 test_dir/test_R1.fq.gz -2 test_dir/test_R2.fq.gz -o test_dir --temp_dir test_dir --unmapped &
-
-# hisat3n reference/hisat3n_hg38 -p 20 -1 test_dir/test_R1.fq.gz -2 test_dir/test_R2.fq.gz -o test_dir_2 --temp_dir test_dir_2 --unmapped --rg_tag --rg_id 123 --rg_sample 293T_456 &
-
-# hisat3n reference/hisat3n_hg38 -p 20 -1 test_dir/test_R1.fq.gz -2 test_dir/test_R2.fq.gz -o test_dir_3 --temp_dir test_dir_3 --unmapped --rg_tag --rg_id 293T-BE4max-VEGFA --rg_sample 293T-BE4max-VEGFA &
-
-
 rule hisat3n_mapping:
     input:
         R1 = "fix.fastq/Detect-{sample}_R1_cutadapt.fq.gz",
