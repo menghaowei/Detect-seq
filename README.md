@@ -18,7 +18,7 @@ Find more at  [www.detect-seq.com](http://www.detect-seq.com)
 ## What is Detect-seq tool?
 
 
-Detect-seq tool can help find off-targets editings, sgRNA alignment, and performing visualization of results. One can carry on Detect-seq experiments and then analyze Detect-seq data with the Detect-seq tool.
+Detect-seq tool can help find off-target editings, sgRNA alignments, and performing visualization of results. One can carry on Detect-seq experiments and then analyze Detect-seq data with the Detect-seq tool.
 
 ## Citation
 
