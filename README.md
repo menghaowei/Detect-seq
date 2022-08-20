@@ -78,8 +78,11 @@ Detect-293T-DdCBE-GFP-PD_R2.fastq.gz
 
 ![A Schematic diagram](./data/image/pipeline.png)
 
+**ALL Scripts and Codes can be found at `/src/detect_seq`**
 
 **ALL OUTPUT EXAMPLES can be found at `/data/example_results`**
+
+**We also offer a SnakeMake workflow at `/snakemake/`**
 
 ## 0. Download reference genome
 
