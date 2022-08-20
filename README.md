@@ -2,12 +2,12 @@
 
 A chemical labeling and biotin pulldown approach for the unbiased, genome-wide off-target evaluation of programmable cytosine base editors
 
-# Update log
+## Update log
 
 1. 2021-07-01 first commit. By MENG Haowei
 2. 2022-08-19 update version. Codes and algorithm design By MENG Haowei. Website, repository and document management By ZHAO Huanan.
 
-# What is Detect-seq?
+## What is Detect-seq?
 
 Detect-seq aims to find all reliable CBE/DdCBE induced off-target editings on the whole genome.
 
@@ -15,449 +15,614 @@ This set of experiments and analytical procedures were reported by the YiLab @ P
 
 Find more at  [www.detect-seq.com](http://www.detect-seq.com)
 
-# What is Detect-seq tool?
+## What is Detect-seq tool?
 
 
 Detect-seq tool can help find off-targets editings, sgRNA alignment, and performing visualization of results. One can carry on Detect-seq experiments and then analyze Detect-seq data with the Detect-seq tool.
 
-# Citation
+## Citation
 
 Please cite our publications if Detect-seq is used in your research.
 
-```
+```text
 # CBE & Detect-seq
 1. Lei, Z., Meng, H., Lv, Z., Liu, M., Zhao, H., Wu, H., ... & Yi, C. (2021). Detect-seq reveals out-of-protospacer editing and target-strand editing by cytosine base editors. Nature Methods, 18(6), 643-651.
 # DdCBE & Detect-seq
 2. Lei, Z., Meng, H., Liu, L., Zhao, H., Rao, X., Yan, Y., ... & Yi, C. (2022). Mitochondrial base editor induces substantial nuclear off-target mutations. Nature, 606(7915), 804-811.
-  
 ```
 
- 
+## Environment
 
-# Requirement, Download, and Usage
-
-## 1. Environment
-> only test on linux
-
-```
+```shell
 git clone https://github.com/menghaowei/Detect-seq.git
 cd Detect-seq
+# this conda env was tested on linux
 conda env create -f conda-env.yaml
-
 conda activate DetectSeq
 ```
+
+configuration about [Hisat-3n](https://github.com/DaehwanKimLab/hisat2/tree/hisat-3n)
+
 
 - - - - - -
 
 # The best practice of Detect-seq analysis
 
-We provide some test data in the `test` dir. So you can download the BAM files and find Detect-seq signal with the following steps.
+In order to comprehensively present the Detect-seq analysis workflow, here we selected two representative Detect-seq datasets from samples of CRISPR-Cas based CBE (BE4max) and CRISPR-Cas free mitochondrial base editor (DdCBE) for bioinformatics analysis demonstration. The relative GEO accessions are GSE151265 and GSE173859. More specifically, one can download the Detect-seq data of BE4max with VEGFA_site2 sgRNA and a matched mCherry control sample under the accession GSM6416152 and GSM6416156; one can download the Detect-seq data of DdCBE-L1397N-ND6 and a matched GFP control sample under the accession GSM5281973 and GSM5281964. The GEO download instructions can be found at https://www.ncbi.nlm.nih.gov/geo/info/download.html And we rename the raw sequencing FASTQ file as follows.
 
-## Contents
-- [0. A general analysis pipeline](#0-a-general-analysis-pipeline)
-- [1. From .BAM to .mpileup file](#1-from-bam-to-mpileup-file)
-- [2. From .mpileup to .pmat file](#2-from-mpileup-to-pmat-file)
-- [3. Merge .pmat file into .mpmat file](#3-merge-pmat-file-into-mpmat-file)
-- [4. Run enrichment test with .mpmat file](#4-run-enrichment-test-with-mpmat-file)
-- [5. Select signicicant regions and run sgRNA alignment](#5-select-signicicant-regions-and-run-sgrna-alignment)
-- [6. Plot sgRNA alignment results](#6-plot-sgrna-alignment-results)
+```text
+# BE4max VEGFA_site2 [GSM6416152]
+Detect-293T-BE4max-VEGFA-All-PD_R1.fastq.gz
+Detect-293T-BE4max-VEGFA-All-PD_R2.fastq.gz
 
-## 0. A general analysis pipeline
+# mCherry control [GSM6416156]
+Detect-293T-BE4max-mCherry-PD_R1.fastq.gz
+Detect-293T-BE4max-mCherry-PD_R2.fastq.gz
 
-When you obtain the `BAM` files, you can follow this analysis pipeline to get your final off-target list and make a sgRNA alignment plot.
+# DdCBE-L1397N-ND6 [GSM5281973]
+Detect-293T-DdCBE-ND6-All-PD_R1.fastq.gz
+Detect-293T-DdCBE-ND6-All-PD_R2.fastq.gz
 
-![](./image/bioinfo_analysis_pipeline.png)
-
-
-## 1. From .BAM to .mpileup file
-
-### 1.1 Requirement
-1. FILE: sorted `BAM`
-2. FILE: reference genome `FASTA` (Here we use `hg38.fa` as an example, and this ref file have to match your `BAM`)
-3. CMD: `samtools` and version >= 1.9
-
-### 1.2 Run code
-You can generate `.mpileup` file from a sorted `.BAM` file with the following command:
-
-```
-samtools mpileup -q 20 -Q 20 --reference hg38.fa -o detect_seq.mpileup  detect_seq.sort.bam
+# GFP control [GSM5281964]
+Detect-293T-DdCBE-GFP-PD_R1.fastq.gz
+Detect-293T-DdCBE-GFP-PD_R2.fastq.gz
 ```
 
-The output file will be like:
+## Analysis Protocol
+- [0. Download reference genome](#0-download-reference-genome)
+- [1. Map the Detect-seq reads](#1-map-the-detect-seq-reads)
+- [2. Low mapping quality reads re-alignment](#2-low-mapping-quality-reads-re-alignment)
+- [3. Duplication removal and reads cleaning of BAM files](#3-duplication-removal-and-reads-cleaning-of-bam-files)
+- [4. Tracing tandem C-to-T signals and perform statistical test](#4-tracing-tandem-c-to-t-signals-and-perform-statistical-test)
+- [5. Criteria selection and downstream analysis](#5-criteria-selection-and-downstream-analysis)
 
-```
-chr1	1302588	G	1	^K.	e
-chr1	1302589	T	1	.	j
-chr1	1302590	G	1	.	o
-chr1	1302591	T	1	.	o
-chr1	1302592	G	1	.	o
-chr1	1302593	T	1	.	s
-chr1	1302594	C	1	.	s
-chr1	1302595	C	1	.	s
-chr1	1302596	A	1	.	s
-chr1	1302597	T	1	.	s
-```
-The `.mpileup` format explain please check the HTML 
-[mpileup explain](http://samtools.sourceforge.net/pileup.shtml)
+![A Schematic diagram](./data/image/pipeline.png)
 
 
-## 2. From .mpileup to .pmat file
-### 2.1 Requirement
-1. FILE: `.mpileup`
-2. CMD: `parse-mpileup-V04.py` (* This command support multiple threads.)
-3. CMD: `bmat2pmat-V02.py`
+**ALL OUTPUT EXAMPLES can be found at `/data/example_results`**
 
-### 2.2 From `.mpileup` to `.bmat` file
-You can generate `.bmat` file from a `.mpileup` file with the following command:
+## 0. Download reference genome
 
-```
-parse-mpileup-V04.py -i detect_seq.mpileup -o detect_seq.bmat -p 1 -n 0
-```
+```shell
+# Download reference genome
+for index in {1..22} X Y M;
+do
+	wget -c https://hgdownload.soe.ucsc.edu/goldenPath/hg38/chromosomes/chr${index}.fa.gz
+done
 
-For help info, please run `python parse-mpileup-V04.py -h`:
+# merge reference FASTA
+fa_file=""
+for index in {1..22} X Y M;
+do
+	fa_file=${fa_file}" "chr${index}.fa.gz
+done
+cat $fa_file > hg38_only_chromosome.fa.gz
 
-```
-python parse-mpileup-V04.py  -h
-usage: parse-mpileup-V04.py [-h] -i INPUT [-o OUTPUT] [-p THREADS] [-n MUTNUM]
-                        [--TempDir TEMPDIR]
+# decompression
+gzip -d  hg38_only_chromosome.fa.gz &
 
-convert mpileup file to info file
+# build FASTA index
+samtools faidx hg38_only_chromosome.fa
 
-optional arguments:
-  -h, --help            show this help message and exit
-  -i INPUT, --Input INPUT
-                        samtools mpileup format file
-  -o OUTPUT, --Output OUTPUT
-                        Output parsed file
-  -p THREADS, --Threads THREADS
-                        Multiple threads number, default=1
-  -n MUTNUM, --MutNum MUTNUM
-                        Only contain mutation info go to the output, set 0
-                        mean output all site, default=0
-  --TempDir TEMPDIR     Where to keep temp files, default is the same dir with
-                        --Input
-```
+# build BWA MEM index
+mkdir bwa_hg38
+cd bwa_hg38
+cp ../hg38_only_chromosome.fa* ./ 
+bwa index hg38_only_chromosome.fa hg38_only_chromosome.fa > bwa_build.log 2>&1 &
 
-The `.bmat`format will looks like:
-
-```
-chr_name    chr_index    ref_base    A    G    C    T    del_count    insert_count    ambiguous_count    deletion    insertion    ambiguous    mut_num
-chr1	1307722	G	0	77	0	1	0	0	0	.	.	.	1
-chr1	1307723	C	0	0	78	0	0	0	0	.	.	.	0
-chr1	1307724	G	0	79	0	0	0	0	0	.	.	.	0
-chr1	1307725	A	70	0	0	0	0	0	0	.	.	.	0
-chr1	1307726	C	0	0	75	0	0	0	0	.	.	.	0
-chr1	1307727	G	0	74	0	0	0	1	0	.	C	.	0
-chr1	1307728	C	0	0	76	0	0	0	0	.	.	.	0
-chr1	1307729	C	0	0	75	0	0	0	0	.	.	.	0
-chr1	1307730	C	0	0	75	0	0	0	0	.	.	.	0
-chr1	1307731	C	0	0	74	0	0	0	0	.	.	.	0
-```
-
-### 2.3 select `C-base` and `G-base` info
-As we all know, `BAM` files convert all sequence information into the reference strand, which also called forward strand (+). So if a CBE edit occurs on the reverse strand (-), `BAM` file record that information as `G-to-A` rather than `C-to-T`. So it is necessary to split results into two parts, a `C-base` part and the other is `G-base` part, represent forward strand (+) edits and reverse strand (-) edits respectively.
-
-```
-# select C-base info (possible foward strand edits)
-awk '$3 == "C" {print $0}' detect_seq.bmat > detect_seq.C.bmat 
-
-# select G-base info (possible reverse strand edits)
-awk '$3 == "G" {print $0}' detect_seq.bmat > detect_seq.G.bmat 
-```
-
-### 2.4 From `.bmat` to `.pmat` file
-
-`.bmat` and `.pmat` files are presented with a little difference. You can generate `.pmat` file from a `.bmat` file with the following command:
-
-```
-# For C-base info
-bmat2pmat-V02.py -i detect_seq.C.bmat -o detect_seq.C.pmat --InHeader False --InLikeBED False --OutHeader True
-
-# For G-base info
-bmat2pmat-V02.py -i detect_seq.G.bmat -o detect_seq.G.pmat --InHeader False --InLikeBED False --OutHeader True
-```
-
-For help info, you can run `python bmat2pmat-V02.py -h`
-
-```
-usage: bmat2pmat-V02.py [-h] -i INPUT [-o OUTPUT] [-c COVERNUMCUTOFF]
-                        [-m MUTNUMCUTOFF] [-r MUTRATIOCUTOFF] [-t MUTTYPE]
-                        [--InHeader INHEADER] [--InLikeBED INLIKEBED]
-                        [--OutHeader OUTHEADER]
-
-convert bmat file to pmat file
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -i INPUT, --Input INPUT
-                        Input bmat file
-  -o OUTPUT, --Output OUTPUT
-                        Output BED format file
-  -c COVERNUMCUTOFF, --CoverNumCutoff COVERNUMCUTOFF
-                        Site coverage number cutoff default=0
-  -m MUTNUMCUTOFF, --MutNumCutoff MUTNUMCUTOFF
-                        Site mutation number cutoff default=0
-  -r MUTRATIOCUTOFF, --MutRatioCutoff MUTRATIOCUTOFF
-                        Site mutation ratio cutoff default=0
-  -t MUTTYPE, --MutType MUTTYPE
-                        Select mutation type, ALL means no selection, can set
-                        like CT, default=ALL
-  --InHeader INHEADER   If contain header line in input file, default=True
-  --InLikeBED INLIKEBED
-                        If input bmat file looks like bed file, default=False
-  --OutHeader OUTHEADER
-                        If contain header line in output file, default=True
-```
-
-## 3. Merge .pmat file into .mpmat file
-### 3.1 Requirement
-1. FILE: reference genome `FASTA` (Here we use `hg38.fa` as an example, and this ref file have to match your `BAM`)
-2. FILE: `.pmat` file
-3. FILE: SNP annotation as `.vcf` format (not necessary)
-4. CMD: `pmat-merge-V04.py`
-
-### 3.2 Explain
-The `pmat` file only records single site information on each line, so we next try to search the tandem `C-to-T` (as `G-to-A` for reverse strand) pattern in the whole genome by `pmat-merge-V04.py` command. 
-
-And you can use the `--SNP` option to set SNP information to ignore SNP or SNV signals during your Detect-seq analysis. 
-
-### 3.3 Run code
-
-```
-# For C-to-T .pmat merge
-pmat-merge-V04.py -f C -t T -r hg38.fa --OutHeader False \
--i detect_seq.C.pmat -o detect_seq.CT.mpmat \
--d 50 -D 100 --NoMutNumCutoff 2 --OmitTandemNumCutoff 2 --SNP SNP_info.vcf & 
-
-# For G-to-A .pmat merge
-pmat-merge-V04.py -f G -t A -r hg38.fa --OutHeader False \
--i detect_seq.G.pmat -o detect_seq.GA.mpmat \
--d 50 -D 100 --NoMutNumCutoff 2 --OmitTandemNumCutoff 2 --SNP SNP_info.vcf & 
-```
-
-For help info, you can run `python pmat-merge-V04.py -h`
-
-```
-usage: pmat-merge-V04.py [-h] -i INPUT [-o OUTPUT] [-f FROMBASE] [-t TOBASE]
-                         -r REFERENCE [-d MAXSITEDISTANCE]
-                         [-D MAXREGIONDISTANCE]
-                         [--NoMutNumCutoff NOMUTNUMCUTOFF]
-                         [--OmitTandemNumCutoff OMITTANDEMNUMCUTOFF]
-                         [--SNP SNP] [--OutHeader OUTHEADER]
-                         [--InHeader INHEADER]
-
-merge pmat file
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -i INPUT, --Input INPUT
-                        Input bmat file
-  -o OUTPUT, --Output OUTPUT
-                        Output BED format file
-  -f FROMBASE, --FromBase FROMBASE
-                        Ref base, accept A,G,C,T default=C
-  -t TOBASE, --ToBase TOBASE
-                        Mut base, accept A,G,C,T default=T
-  -r REFERENCE, --reference REFERENCE
-                        Reference genome fasta file
-  -d MAXSITEDISTANCE, --MaxSiteDistance MAXSITEDISTANCE
-                        Max distance between two sites in one region,
-                        default=50
-  -D MAXREGIONDISTANCE, --MaxRegionDistance MAXREGIONDISTANCE
-                        Max length of a mutation region, default=100
-  --NoMutNumCutoff NOMUTNUMCUTOFF
-                        The number of site without mutation --ToBase signal in
-                        a mutation region, default=2
-  --OmitTandemNumCutoff OMITTANDEMNUMCUTOFF
-                        The omit tande site cutoff, default=2
-  --SNP SNP             SNP file with vcf or bed format, if use multiple file,
-                        use ',' to separate, default=None
-  --OutHeader OUTHEADER
-                        If contain header line in output file, default=True
-  --InHeader INHEADER   If contain header line in input file, default=True
+# build HISAT3N index
+mkdir hisat3n_hg38_CT
+cp ./hg38_only_chromosome.fa* ./hisat3n_hg38_CT
+hisat-3n-build --base-change C,T hg38_only_chromosome.fa hg38_only_chromosome.fa > hisat3n_hg38_CT_index.log 2>&1 &
 ```
 
 
-## 4. Run enrichment test with .mpmat file 
-### 4.1 Requirement
-1. FILE: `.mpmat`
-2. FILE: Genome background file in `.json` format
-3. CMD: `calculate-mut-stats-V02.py` (* This command support multiple threads.)
-4. CMD: `find-significant-mpmat-V02.py`
+## 1. Map the Detect-seq reads
 
-### 4.2 Merge `C-to-T` and `G-to-A` `.mpmat` files
-In this step, we should merge two strands `.mpmat` file together.
+Map the Detect-seq sequencing reads to the reference genome by HISAT-3N, which uses a base conversion alignment strategy.
 
-```
-# merge file 
-cat detect_seq.CT.mpmat detect_seq.GA.mpmat > detect_seq.merge.mpmat
+```shell
+# remove sequencing adapter 
+mkdir fix.fastq
 
-# sort file 
-bedtools sort -g hg38.fa.fai -i detect_seq.merge.mpmat  > detect_seq.merge.sort.mpmat
-```
+for sample in 293T-BE4max-mCherry-PD 293T-BE4max-VEGFA-All-PD 293T-DdCBE-GFP-PD 293T-DdCBE-ND6-All-PD
+do
+    in_fq_R1=raw.fastq/Detect-${sample}_R1.fastq.gz
+in_fq_R2=raw.fastq/Detect-${sample}_R2.fastq.gz
 
-### 4.3 Count genome background and generate `.json` files
-Next to calculate genome background before running a statistical test. 
+    out_fq_R1=fix.fastq/Detect-${sample}_R1_cutadapt.fq.gz
+out_fq_R2=fix.fastq/Detect-${sample}_R2_cutadapt.fq.gz
 
-```
-# ctrl sample
-calculate-mut-stats-V02.py -i Full.Ctrl.bam -r hg38.fa -p 1 -o background_ctrl.json
+    log=fix.fastq/Detect-${sample}_cutadapt.log
 
-# treat (PD) sample
-calculate-mut-stats-V02.py -i Full.Treat.bam -r hg38.fa -p 1 -o background_treat.json
-```
+    cutadapt -j 20 --times 1  -e 0.1  -O 3  --quality-cutoff 25 -m 55 -a AGATCGGAAGAGCACACGT  -A  AGATCGGAAGAGCGTCGTG -o ${out_fq_R1} -p ${out_fq_R2} ${in_fq_R1} ${in_fq_R2} > ${log} 2>&1 &
+done
 
-This step has to provide a full-size bam with all genome mapping reads into a script, so here we just show a pretend demo. And you can find `background_ctrl.json` and `background_treat.json` files in the `test` dir.
+# HISAT-3N mapping
+mkdir bam.hisat3n
 
-### 4.4 Run Poisson test
-Run Poisson test with `find-significant-mpmat-V02.py` and this idea refers to [MACS2](https://github.com/taoliu/MACS)
+for sample in 293T-BE4max-mCherry-PD 293T-BE4max-VEGFA-All-PD 293T-DdCBE-GFP-PD 293T-DdCBE-ND6-All-PD
+do
+    in_fq_R1=fix.fastq/Detect-${sample}_R1_cutadapt.fq.gz
+    in_fq_R2=fix.fastq/Detect-${sample}_R2_cutadapt.fq.gz
+    out_bam=bam.hisat3n/${sample}_hisat3n_hg38.bam 
 
-```
-find-significant-mpmat-V02.py \
--i detect_seq.merge.sort.mpmat \
--c detect_seq.ctrl.sort.bam \
--t detect_seq.sort.bam \
--r hg38.fa \
--m background_ctrl.json \
--n background_treat.json \
--g hg38.json \
--o detect_seq.StatsTest.table \
---region_mutation_min_cutoff 2 \
---query_mutation_type CT,GA \
---query_mutation_min_cutoff 2 \
---query_mutation_max_cutoff 18 \
---other_mutation_max_cutoff 12 \
---total_mutation_max_cutoff 26
+    ummapped_fq=bam.hisat3n/${sample}_hisat3n_hg38_unmapped.fq.gz
+    log=bam.hisat3n/${sample}_hisat3n.log
+    ref_idx=reference/hisat3n_hg38_CT/hg38_only_chromosome.fa
+
+    hisat-3n -x ${ref_idx} -1 ${in_fq_R1} -2 ${in_fq_R2} -p 20 --sensitive --base-change C,T --unique-only --repeat-limit 1000 --no-spliced-alignment -X 700 --un-conc-gz ${ummapped_fq} --summary-file ${log} --rg-id ${sample} --rg "PL:ILLUMINA" --rg "ID:"${sample} --rg "SM:"${sample} | samtools view -hb > ${out_bam} &
+done
 ```
 
-Then you will have a test result like:
+## 2. Low mapping quality reads re-alignment
+Merge the low mapping quality reads or unmapped reads and subject them to a re-alignment step. In this step, we utilize a non-conversion aligner like BWA MEM to re-align those reads to the reference genome.
 
-```
-chr_name    region_start    region_end    ctrl_count    treat_count    ctrl_mut_count    treat_mut_countctrl_count.norm    treat_count.norm    ctrl_mut_count.norm    treat_mut_count.norm    log2_FC    log2_FC_mut    p_value    FDR
-chr1	1303462	1303462	5	3	0	0	0.0	0.0	3.60519843946	1.52868309363	NA	-1.23778931409	0.9433256859064737	0.9433256859064737
-chr1	1303610	1303612	2	4	0	1	0.0	0.50956103121	1.44207937578	2.03824412484	-0.972673143489	0.499176280075	0.8426930101168323	0.9433256859064737
-chr1	1303615	1303615	2	4	0	0	0.0	0.0	1.44207937578	2.03824412484	NA	0.499176280075	0.9433256859064737	0.9433256859064737
-chr1	1303634	1303637	2	4	0	1	0.0	0.50956103121	1.44207937578	2.03824412484	-0.972673143489	0.499176280075	0.8426930101168323	0.9433256859064737
-chr1	1307688	1307704	0	108	0	105	0	53.50390828	0	55.03259137	5.741572374	5.782214359	1.50E-16	6.89E-14
-chr1	93448687	93448710	6	85	1	75	0.721039688	38.21707734	4.326238127	43.31268765	5.727994971	3.323604715	6.58E-12	2.27E-09
-chr1	109629398	109629446	6	157	0	144	0	73.37678849	4.326238127	80.0010819	6.197251858	4.208834528	1.42E-22	8.42E-20
-chr2	396529	396546	5	36	0	31	0	15.79639197	3.605198439	18.34419712	3.981523167	2.347173187	2.27E-05	0.00471216
-```
+```shell
+# select low mapping quality BAM
+for sample in 293T-BE4max-mCherry-PD 293T-BE4max-VEGFA-All-PD 293T-DdCBE-GFP-PD 293T-DdCBE-ND6-All-PD
+do  
+    in_bam=bam.hisat3n/${sample}_hisat3n_hg38.bam 
+    out_bam=bam.hisat3n/${sample}_hisat3n_hg38.MAPQ20.LowerMAPQ20.bam
 
-The output table column explain is:
+    samtools view -h -@ 4 ${in_bam} | awk '$1~"@" || $5 <= 20  {print $0}' |  samtools view -@ 4 -hb > ${out_bam} &
+done
 
-- `ctrl_count` reads count in control `BAM` file
-- `treat_count` reads count in treat `BAM` file
-- `ctrl_mut_count` reads count in control `BAM` file with tandem mutation signals
-- `treat_mut_count` reads count in treat `BAM` file with tandem mutation signals
-- `ctrl_count.norm` nomalized reads count in control `BAM` file
-- `treat_count.norm` nomalized reads count in treat `BAM` file 
-- `ctrl_mut_count.norm` nomalized mutation reads count in control `BAM` file
-- `treat_mut_count.norm` nomalized mutation reads count in treat `BAM` file
-- `log2_FC` calculate as `log2_FC = log2(treat_count.norm / ctrl_count.norm)`
-- `log2_FC_mut` calculate as `log2_FC_mut = log2(treat_mut_count.norm / ctrl_mut_count.norm)`
-- `p_value` Poisson test pvalue
-- `FDR` Adjust pvalue with Benjamini-Hochberg method.
+# BAM sort by reads name
+for sample in 293T-BE4max-mCherry-PD 293T-BE4max-VEGFA-All-PD 293T-DdCBE-GFP-PD 293T-DdCBE-ND6-All-PD
+do  
+    in_bam=bam.hisat3n/${sample}_hisat3n_hg38.MAPQ20.LowerMAPQ20.bam
+    out_bam=bam.hisat3n/${sample}_hisat3n_hg38.MAPQ20.LowerMAPQ20.SortName.bam
+    temp_file=bam.hisat3n/${sample}_hisat3n_hg38.MAPQ20.LowerMAPQ20.SortName.bam.temp
 
-## 5. Select signicicant regions and run sgRNA alignment
-### 5.1 Requirement
-1. FILE: `detect_seq.StatsTest.table`
-2. CMD: `mpmat-to-art-V04.py`
+    samtools sort -O BAM -o ${out_bam} -T ${temp_file} -@ 15 -m 2G -n ${in_bam} &
+done
 
-### 5.2 Select significant region
-Related to our experience, the regions with the following criterion can be considered as enriched off-targets region:
+# fetch low mapping quality reads from BAM file
+for sample in 293T-BE4max-mCherry-PD 293T-BE4max-VEGFA-All-PD 293T-DdCBE-GFP-PD 293T-DdCBE-ND6-All-PD
+do  
+in_bam=bam.hisat3n/${sample}_hisat3n_hg38.MAPQ20.LowerMAPQ20.SortName.bam
+    ref_genome_fa=reference/hisat3n_hg38_CT/hg38_only_chromosome.fa
+    out_fq_R1=bam.hisat3n/${sample}_hisat3n_hg38.LowerMAPQ20_R1.fq.gz
+out_fq_R2=bam.hisat3n/${sample}_hisat3n_hg38.LowerMAPQ20_R2.fq.gz
 
-1. `FDR` < 0.05;
-2. `log2_FC_mut` > 1;
-3. `ctrl_mut_count` < 3 OR `ctrl_mut_count.norm` < 3;
+    samtools fastq -@ 15 -0 /dev/null -s /dev/null -n -F 0x900 -1 ${out_fq_R1} -2 ${out_fq_R2} --reference ${ref_genome_fa}  ${in_bam} &
+done
 
-After this select step, we can obtain `detect_seq.StatsTest.Sign.table`.
+# merge unmapped reads and low mapping quality reads
+for sample in 293T-BE4max-mCherry-PD 293T-BE4max-VEGFA-All-PD 293T-DdCBE-GFP-PD 293T-DdCBE-ND6-All-PD
+do  
+    low_fq_R1=bam.hisat3n/${sample}_hisat3n_hg38.LowerMAPQ20_R1.fq.gz
+    low_fq_R2=bam.hisat3n/${sample}_hisat3n_hg38.LowerMAPQ20_R2.fq.gz
 
-### 5.2 Select `.mpmat` file 
-```
-bedtools intersect -a detect_seq.merge.sort.mpmat -b detect_seq.StatsTest.Sign.table -wa > detect_seq.merge.sort.Sign.mpmat
-```
+    unmapped_fq_R1=bam.hisat3n/${sample}_hisat3n_hg38_unmapped.fq.1.gz
+    unmapped_fq_R2=bam.hisat3n/${sample}_hisat3n_hg38_unmapped.fq.2.gz
 
-### 5.3 Run sgRNA alignment
-You can run sgRNA alignment as the following command. Only one thing you should take care of, the `--sgRNA` sequence has to include `PAM` info.
+    out_fq_R1=bam.hisat3n/${sample}_R1_unmapped_and_LowerMAPQ20.fq.gz
+    out_fq_R2=bam.hisat3n/${sample}_R2_unmapped_and_LowerMAPQ20.fq.gz
 
-```
-mpmat-to-art-V04.py \
--i detect_seq.merge.sort.Sign.mpmat -r hg38.fa --sgRNA GACCCCCTCCACCCCGCCTCCGG > detect_seq.merge.sort.Sign.art
-```
-For more alignment options you can run `python mpmat-to-art-V04.py -h`
+    cat ${low_fq_R1} ${unmapped_fq_R1} > ${out_fq_R1} &
+    cat ${low_fq_R2} ${unmapped_fq_R2} > ${out_fq_R2} & 
+done
 
-```
-usage: mpmat-to-art-V04.py [-h] -i MPMAT_TABLE --sgRNA SGRNA
-                           [-o OUT_ALIGNMENT_RESULT] -r REFERENCE
-                           [-s SAMPLE_NAME] [--extend_method EXTEND_METHOD]
-                           [--align_dist_to_signal ALIGN_DIST_TO_SIGNAL]
-                           [--bedtools_path BEDTOOLS_PATH]
-                           [--align_method ALIGN_METHOD]
-                           [--align_settings ALIGN_SETTINGS]
-                           [--align_min_score ALIGN_MIN_SCORE]
-                           [--input_header INPUT_HEADER]
-                           [--input_sep INPUT_SEP]
-                           [--more_colname MORE_COLNAME]
+# re-alignment with BWA MEM
+for sample in 293T-BE4max-mCherry-PD 293T-BE4max-VEGFA-All-PD 293T-DdCBE-GFP-PD 293T-DdCBE-ND6-All-PD
+do  
+    in_fq_R1=bam.hisat3n/${sample}_R1_unmapped_and_LowerMAPQ20.fq.gz
+    in_fq_R2=bam.hisat3n/${sample}_R2_unmapped_and_LowerMAPQ20.fq.gz
+    bwa_index=reference/bwa_hg38/hg38_only_chromosome.fa
 
-From .mpmat to alignment result table (.art) file
+    out_bam=bam.hisat3n/${sample}_bwa_hg38_realign.bam
+    bwa_log=bam.hisat3n/${sample}_bwa_hg38_realign.log
 
-optional arguments:
-  -h, --help            show this help message and exit
-  -i MPMAT_TABLE, --mpmat_table MPMAT_TABLE
-                        .mpmat table file, generated from <pmat-merge.py> or
-                        <mpmat-select.py>
-  --sgRNA SGRNA         sgRNA sequence with PAM (NGG/NAG) sequence
-  -o OUT_ALIGNMENT_RESULT, --out_alignment_result OUT_ALIGNMENT_RESULT
-                        Output alignment result table (.art) filename,
-                        default=Stdout
-  -r REFERENCE, --reference REFERENCE
-                        Reference genome fasta file
-  -s SAMPLE_NAME, --sample_name SAMPLE_NAME
-                        Sample name of this .mpmat, default=run_mpmat
-  --extend_method EXTEND_METHOD
-                        Select and extend region of mpmat file to get FASTA
-                        file, <region> <upstream_site> <downstream_site>
-                        <highest_site>, default=highest_site
-  --align_dist_to_signal ALIGN_DIST_TO_SIGNAL
-                        If distance too far between mutation signal and
-                        alignment, consider as there is no appropriate
-                        alignment, default=20
-  --bedtools_path BEDTOOLS_PATH
-                        Software <bedtools> PATH, default considered
-                        <bedtools> is already included in current PATH
-                        environment.
-  --align_method ALIGN_METHOD
-                        Provide two methods, <PAM_first> <fair_align>,
-                        'PAM_first' treat PAM region with a higher weight,
-                        default=fair_align
-  --align_settings ALIGN_SETTINGS
-                        Set <align_match_score> <align_mismatch_score>
-                        <align_gap_open_score> <align_gap_extension_score>,
-                        default=5,-4,-24,-8
-  --align_min_score ALIGN_MIN_SCORE
-                        If alignment score lower than this, consider as no
-                        appropriate alignment, default=15
-  --input_header INPUT_HEADER
-                        If .mpmat file contain header, default=False
-  --input_sep INPUT_SEP
-                        default=\t
-  --more_colname MORE_COLNAME
-                        More info you want to include in output table, so you
-                        can write the column names like col1,col2...
-                        default=None
+    bwa mem ${bwa_index}${in_fq_R1} {in_fq_R2} -t 20 -M -R '@RG\tID:'${sample}'\tPL:ILLUMINA\tSM:'${sample} 2>${bwa_log} | samtools view -hb > ${out_bam} &
+done
 ```
 
-## 6. Plot sgRNA alignment results
-### 6.1 Requirement
-1. FILE: `detect_seq.merge.sort.Sign.art`
-2. CMD: `plot-art-V01.py`
+## 3. Duplication removal and reads cleaning of BAM files
+Merge the HISAT-3N alignment BAM file and the BWA MEM alignment BAM file together, and then remove the duplication reads, non-concordant reads, clipped mapping reads and the secondary alignment reads. Only reads with a mapping quality larger than 20 are retained for subsequent analysis.
 
-### 6.2 Run code
+```shell
+# merge HISAT-3n BAM and BWA MEM BAM
+for sample in 293T-BE4max-mCherry-PD 293T-BE4max-VEGFA-All-PD 293T-DdCBE-GFP-PD 293T-DdCBE-ND6-All-PD
+do  
+    in_bam_bwa=bam.hisat3n/${sample}_bwa_hg38_realign.bam
+    in_bam_hisat3n=bam.hisat3n/${sample}_hisat3n_hg38.bam 
+    out_bam=bam.hisat3n/${sample}_hg38_merge.MAPQ20.bam
+
+    samtools cat -o ${out_bam} ${in_bam_hisat3n} ${in_bam_bwa} &
+done
+
+# sort BAM by genome coordinate
+for sample in 293T-BE4max-mCherry-PD 293T-BE4max-VEGFA-All-PD 293T-DdCBE-GFP-PD 293T-DdCBE-ND6-All-PD
+do  
+    in_bam=bam.hisat3n/${sample}_hg38_merge.MAPQ20.bam
+    out_bam=bam.hisat3n/${sample}_hg38_merge_sort.MAPQ20.bam
+    temp_file=bam.hisat3n/${sample}_hg38_merge_sort.MAPQ20.bam.temp
+
+    samtools sort -O BAM -o ${out_bam} -T ${temp_file} -@ 15 -m 2G ${in_bam} &
+done
+
+# remove duplication
+for sample in 293T-BE4max-mCherry-PD 293T-BE4max-VEGFA-All-PD 293T-DdCBE-GFP-PD 293T-DdCBE-ND6-All-PD
+do  
+    in_bam=bam.hisat3n/${sample}_hg38_merge_sort.MAPQ20.bam
+
+    out_log=bam.hisat3n/${sample}_hg38_merge_sort_rmdup.log
+    out_bam=bam.hisat3n/${sample}_hg38_merge_sort_rmdup.MAPQ20.WithClip.bam
+    out_matrix=bam.hisat3n/${sample}_hg38_merge_sort_rmdup.matrix
+    
+    java -Xms50g -Xmx50g -XX:ParallelGCThreads=20 -jar picard.jar MarkDuplicates I=${in_bam} O=${out_bam} M=${out_matrix} ASO=coordinate REMOVE_DUPLICATES=true 2> ${out_log} &
+done
+
+# filter clip, non-concordant reads, low MAPQ reads and secondary alignment
+for sample in 293T-BE4max-mCherry-PD 293T-BE4max-VEGFA-All-PD 293T-DdCBE-GFP-PD 293T-DdCBE-ND6-All-PD
+do  
+    in_bam=bam.hisat3n/${sample}_hg38_merge_sort_rmdup.MAPQ20.WithClip.bam
+    out_bam=bam.hisat3n/${sample}_hg38_merge_sort_rmdup.MAPQ20.bam
+    ref_genome_fa=reference/hisat3n_hg38_CT/hg38_only_chromosome.fa
+    
+    samtools view -@ 4 -h ${in_bam} -q 20 -f 3 -F 256 | samclip --ref ${ref_genome_fa} --max 3 --progress 0 | awk 'function abs(v) {return v < 0 ? -v : v} $1~"@" || ($7 == "=" && abs($9) <= 2500 ) {print $0}' | samtools view -@ 4 -hb > ${out_bam} &
+done
+
+# build BAM index
+for sample in 293T-BE4max-mCherry-PD 293T-BE4max-VEGFA-All-PD 293T-DdCBE-GFP-PD 293T-DdCBE-ND6-All-PD
+do  
+    in_bam=bam.hisat3n/${sample}_hg38_merge_sort_rmdup.MAPQ20.bam
+    out_bam_index=bam.hisat3n/${sample}_hg38_merge_sort_rmdup.MAPQ20.bam.bai
+    
+    samtools index -@ 10 ${in_bam} ${out_bam_index} &
+done
 ```
-plot-art-V01.py -i detect_seq.merge.sort.Sign.art --sgRNA GACCCCCTCCACCCCGCCTCCGG --out_figure_format png -o out.art.png
+
+## 4. Tracing tandem C-to-T signals and perform statistical test
+
+Catch contiguous tandem mutation information from BAM files (i.e., tandem C-to-T mutation signals for the Watson strand and tandem G-to-A mutation signals for the Crick strand). Then perform a comparison for those tandem mutation signals between control sample and Detect-seq treatment sample by the Poisson statistical test. After this step, one can obtain tables containing information of tandem mutation signals (a mpmat file shown in the code part) and matched Poisson test results (a TSV table shown in the code part).
+
+```shell
+# convert BAM to pmat format
+mkdir pmat_and_mpmat
+
+for sample in 293T-BE4max-VEGFA-All-PD  293T-DdCBE-ND6-All-PD
+do  
+    in_bam=bam.hisat3n/${sample}_hg38_merge_sort_rmdup.MAPQ20.bam
+    ref_genome_fa=reference/hisat3n_hg38_CT/hg38_only_chromosome.fa
+    out_pmat=pmat_and_mpmat/${sample}_hg38_merge_sort_rmdup.MAPQ20.pmat
+    out_log=pmat_and_mpmat/${sample}_hg38_merge_sort_rmdup.MAPQ20.bam2pmat.log
+
+python bam2pmat.py -i ${in_bam} -r ${ref_genome_fa} -o ${out_pmat} -p 20 --out_format pmat --bed_like_format True --mut_type ALL --block_size 100000  --cover_num_cutoff 0 --mut_num_cutoff 0 --mut_ratio_cutoff 0 --keep_temp_file False --out_header False > ${out_log}  2>&1 &
+
+done
+
+# tracing tandem mutation signals
+for sample in 293T-BE4max-VEGFA-All-PD  293T-DdCBE-ND6-All-PD
+do  
+    ref_genome_fa=reference/hisat3n_hg38_CT/hg38_only_chromosome.fa
+    in_C_pmat=pmat_and_mpmat/${sample}_hg38_merge_sort_rmdup.MAPQ20_C.pmat
+    in_G_pmat=pmat_and_mpmat/${sample}_hg38_merge_sort_rmdup.MAPQ20_G.pmat
+
+    out_CT_mpmat=pmat_and_mpmat/${sample}_hg38.MAPQ20.merge_d50_D100.CT.mpmat
+    out_GA_mpmat=pmat_and_mpmat/${sample}_hg38.MAPQ20.merge_d50_D100.GA.mpmat
+    out_CT_log=pmat_and_mpmat/${sample}_hg38.MAPQ20.merge_d50_D100.CT.mpmat.log
+    out_GA_log=pmat_and_mpmat/${sample}_hg38.MAPQ20.merge_d50_D100.GA.mpmat.log
+
+    # CT on the Watson strand
+    python pmat-merge.py -i ${in_C_pmat} -f C -t T -r ${ref_genome_fa} -d 50 -D 100 --NoMutNumCutoff 2 --OmitTandemNumCutoff 2 -o ${out_CT_mpmat} --SNP snv_info/293T-snv_info.list1.bed,snv_info/293T-snv_info.list2.vcf 2> ${out_CT_log} &
+    
+    # CT on the Crick strand
+    python pmat-merge.py -i ${in_G_pmat} -f G -t A -r ${ref_genome_fa} -d 50 -D 100 --NoMutNumCutoff 2 --OmitTandemNumCutoff 2 -o ${out_GA_mpmat} --SNP snv_info/293T-snv_info.list1.bed,snv_info/293T-snv_info.list2.vcf 2> ${out_GA_log} &
+done
+
+# merge tandem mutation signals and sort
+for sample in 293T-BE4max-VEGFA-All-PD  293T-DdCBE-ND6-All-PD
+do  
+    in_CT_mpmat=pmat_and_mpmat/${sample}_hg38.MAPQ20.merge_d50_D100.CT.mpmat
+    in_GA_mpmat=pmat_and_mpmat/${sample}_hg38.MAPQ20.merge_d50_D100.GA.mpmat
+    ref_genome_fa_index=reference/hisat3n_hg38_CT/hg38_only_chromosome.fa.fai
+
+    out_CT_mpmat=pmat_and_mpmat/${sample}_hg38.MAPQ20.merge_d50_D100.CT.select.mpmat
+    out_GA_mpmat=pmat_and_mpmat/${sample}_hg38.MAPQ20.merge_d50_D100.GA.select.mpmat    
+    out_merge_mpmat=pmat_and_mpmat/${sample}_hg38.MAPQ20.merge_d50_D100.merge.select.mpmat
+out_merge_sort_mpmat=pmat_and_mpmat/${sample}_hg38.MAPQ20.merge.select.sort.mpmat
+out_rm_chr_mpmat=pmat_and_mpmat/${sample}_hg38.MAPQ20.merge.select.sort.RmChrYChrM.mpmat
+
+    # select CT
+    python mpmat-select.py -i {in_CT_mpmat} -o ${out_CT_mpmat} -f C -t T -m 4 -c 6 -r 0.01 --RegionPassNum 1 --RegionToleranceNum 10 --RegionMutNum 2 --InHeader True --OutHeader False
+
+    # select GA
+    python mpmat-select.py -i {in_GA_mpmat} -o ${out_GA_mpmat} -f G -t A -m 4 -c 6 -r 0.01 --RegionPassNum 1 --RegionToleranceNum 10 --RegionMutNum 2 --InHeader True --OutHeader False
+ # merge CT singal on the Watson strand and the Crick strand
+    cat ${out_CT_mpmat} ${out_GA_mpmat}  > ${out_merge_mpmat}
+
+    # sort by the genome coordinate
+    bedtools sort -i ${out_merge_mpmat} -g ${ref_genome_fa_index} | uniq > ${out_merge_sort_mpmat}
+
+    # remove chrY and chrM
+    cat ${out_merge_sort_mpmat} | grep -v chrY | grep -v chrM > ${out_rm_chr_mpmat}
+done
+
+# run the Poisson enrichment test
+ref_genome_fa=reference/hisat3n_hg38_CT/hg38_only_chromosome.fa
+
+# for BE4max sample
+python find-significant-mpmat.py -p 25 \
+-i pmat_and_mpmat/293T-BE4max-VEGFA-All-PD_hg38.MAPQ20.merge.select.sort.RmChrYChrM.mpmat \
+-o poisson_res/293T-BE4max-VEGFA-All-PD_vs_ctrl_hg38.select.pvalue_table \
+-c bam.hisat3n/293T-BE4max-mCherry-PD_hg38_merge_sort_rmdup.MAPQ20.bam \
+-t bam.hisat3n/293T-BE4max-VEGFA-All-PD_hg38_merge_sort_rmdup.MAPQ20.bam \
+-r ${ref_genome_fa} \
+--query_mutation_type CT,GA  \
+--mpmat_filter_info_col_index -1 \
+--mpmat_block_info_col_index -1  \
+--region_block_mut_num_cutoff 2  \
+--query_mut_min_cutoff 2  \
+--query_mut_max_cutoff 16  \
+--total_mut_max_cutoff 16  \
+--other_mut_max_cutoff 6   \
+--seq_reads_length 150  \
+--lambda_method ctrl_max \
+--poisson_method mutation \
+2> poisson_res/293T-BE4max-VEGFA-All-PD_vs_ctrl_hg38_possion_test.log &
+
+# for DdCBE sample
+python find-significant-mpmat.py -p 25 \
+-i pmat_and_mpmat/293T-DdCBE-ND6-All-PD_hg38.MAPQ20.merge.select.sort.RmChrYChrM.mpmat \
+-o poisson_res/293T-DdCBE-ND6-All-PD_vs_ctrl_hg38.select.pvalue_table \
+-c bam.hisat3n/293T-DdCBE-GFP-PD_hg38_merge_sort_rmdup.MAPQ20.bam \
+-t bam.hisat3n/293T-DdCBE-ND6-All-PD_hg38_merge_sort_rmdup.MAPQ20.bam \
+-r ${ref_genome_fa} \
+--query_mutation_type CT,GA  \
+--mpmat_filter_info_col_index -1 \
+--mpmat_block_info_col_index -1  \
+--region_block_mut_num_cutoff 2  \
+--query_mut_min_cutoff 2  \
+--query_mut_max_cutoff 16  \
+--total_mut_max_cutoff 16  \
+--other_mut_max_cutoff 6   \
+--seq_reads_length 150  \
+--lambda_method ctrl_max \
+--poisson_method mutation \
+2> poisson_res/293T-DdCBE-ND6-All-PD_vs_ctrl_hg38_possion_test.log &
 ```
 
-After a few seconds, you can obtain an image with a match and mismatch information between the sgRNA sequence and off-target region.
+## 5. Criteria selection and downstream analysis
 
-![art-plot](./test/out.art.png)
+### 5.1 Criteria for selection of significant Detect-seq signals
+
+Select the significant Detect-seq signals according to the Poisson test results with a certain criterion. Note that an arbitrary criterion could introduce potential false positive or false negative issues. In fact, Detect-seq of BE4max and DdCBE samples show different mutation patterns, which require corresponding thresholds. Here, we recommend two criteria, one strict and another lenient, for users to select the significant Detect-seq signals of BE4max or DdCBE samples. The following codes can run in an R session.
+
+```R
+# 1. BE4max 
+rm(list=ls())
+
+library(tidyverse)
+
+setwd(dir = "./detect_nat_protocol/")
+
+#-------------------------------------------------------------------------->>>>>>>
+# 1.1 find sign region
+#-------------------------------------------------------------------------->>>>>>>
+
+# load merge table
+poisson_res = read_tsv(file = "./poisson_res/293T-BE4max-VEGFA-All-PD_vs_ctrl_hg38.select.pvalue_table")
+
+# check column name
+colnames(poisson_res)
+
+#-------------------------------------------------------------------------->>>>>>>
+# select significant Detect-seq signals
+#-------------------------------------------------------------------------->>>>>>>
+# strict selection 
+poisson_res.sign.strict = filter(
+  poisson_res, 
+  FDR < 0.0001 ,
+  log2_FC_mut >= 2, 
+  ctrl_mut_count <= 1,
+  treat_mut_count.norm * 100 >= 10,
+  treat_mut_count >= 20,
+  treat_mut_count / treat_count >= 0.15,
+  region_block_site_num <= 1,
+  region_highest_site_mut_ratio >= 0.35
+)
+
+# lenient selection 
+poisson_res.sign.lenient = filter(
+  poisson_res, 
+  FDR < 0.01 ,
+  log2_FC_mut >= 2, 
+  ctrl_mut_count <= 1,
+  treat_mut_count.norm * 100 >= 5,
+  treat_mut_count >= 10,
+  treat_mut_count / treat_count >= 0.15,
+  region_block_site_num <= 1,
+  region_highest_site_mut_ratio >= 0.30
+)
+
+# --------------------------------------------------------------------------------->>>>>
+# get corresponding mpmat file
+# --------------------------------------------------------------------------------->>>>>
+# mpmat table column type
+col_type_info = cols(
+  X1 = col_character(),
+  X2 = col_double(),
+  X3 = col_double(),
+  X4 = col_double(),
+  X5 = col_double(),
+  X6 = col_double(),
+  X7 = col_character(),
+  X8 = col_character(),
+  X9 = col_character(),
+  X10 = col_character(),
+  X11 = col_character(),
+  X12 = col_character(),
+  X13 = col_character()
+)
+
+mpmat_filename = "./pmat_and_mpmat/293T-BE4max-VEGFA-All-PD_hg38.MAPQ20.merge.select.sort.RmChrYChrM.mpmat"
+mpmat_table = read_tsv(file = mpmat_filename, col_names = F, col_types = col_type_info)
+colnames(mpmat_table)[1:3] = c("chrom", "start", "end")
+mpmat_table.AddIdx <- mpmat_table %>% unite("mpmat_index", chrom:end, sep = "_", remove = F)
+
+# strict mpmat select 
+mpmat_table.strict.select <- filter(
+  mpmat_table.AddIdx,
+  mpmat_index %in% poisson_res.sign.strict$mpmat_index
+) %>% select(
+  -mpmat_index
+)
+
+write_tsv(mpmat_table.strict.select, file = "./final_list/293T-BE4max-VEGFA.StrictList.mpmat", col_names = F)
+
+# lenient mpmat select 
+mpmat_table.lenient.select <- filter(
+  mpmat_table.AddIdx,
+  mpmat_index %in% poisson_res.sign.lenient$mpmat_index
+) %>% select(
+  -mpmat_index
+)
+
+write_tsv(mpmat_table.lenient.select, file = "./final_list/293T-BE4max-VEGFA.LenientList.mpmat", col_names = F)
+
+# 2. DdCBE
+rm(list=ls())
+library(tidyverse)
+setwd(dir = "./detect_nat_protocol/")
+
+#-------------------------------------------------------------------------->>>>>>>
+# 2.1 find sign region
+#-------------------------------------------------------------------------->>>>>>>
+
+# load merge table
+poisson_res = read_tsv(file = "./poisson_res/293T-DdCBE-ND6-All-PD_vs_ctrl_hg38.select.pvalue_table")
+
+# check column name
+colnames(poisson_res)
+
+# strict selection 
+poisson_res.sign.strict = filter(
+  poisson_res, 
+  FDR < 0.0001 ,
+  log2_FC_mut >= 2, 
+  ctrl_mut_count <= 1,
+  treat_mut_count.norm * 100 >= 10,
+  treat_mut_count >= 15,
+  treat_mut_count / treat_count >= 0.15,
+  region_block_site_num <= 1,
+  region_highest_site_mut_ratio >= 0.25
+)
+
+# lenient selection 
+poisson_res.sign.lenient.part1 = filter(
+  poisson_res, 
+  FDR < 0.01 ,
+  log2_FC_mut >= 2, 
+  ctrl_mut_count <= 1,
+  treat_mut_count.norm * 100 >= 5,
+  treat_mut_count >= 15,
+  treat_mut_count / treat_count >= 0.15,
+  region_block_site_num <= 1,
+  region_highest_site_mut_ratio >= 0.15
+)
+
+#-------------------------------------------------------------------------->>>>>>>
+# get corresponding mpmat file
+#-------------------------------------------------------------------------->>>>>>>
+# mpmat table column type
+col_type_info = cols(
+  X1 = col_character(),
+  X2 = col_double(),
+  X3 = col_double(),
+  X4 = col_double(),
+  X5 = col_double(),
+  X6 = col_double(),
+  X7 = col_character(),
+  X8 = col_character(),
+  X9 = col_character(),
+  X10 = col_character(),
+  X11 = col_character(),
+  X12 = col_character(),
+  X13 = col_character()
+)
+
+mpmat_filename = "./pmat_and_mpmat/293T-DdCBE-ND6-All-PD_hg38.MAPQ20.merge.select.sort.RmChrYChrM.mpmat"
+mpmat_table = read_tsv(file = mpmat_filename, col_names = F, col_types = col_type_info)
+colnames(mpmat_table)[1:3] = c("chrom", "start", "end")
+mpmat_table.AddIdx <- mpmat_table %>% unite("mpmat_index", chrom:end, sep = "_", remove = F)
+
+# strict mpmat select 
+mpmat_table.strict.select <- filter(
+  mpmat_table.AddIdx,
+  mpmat_index %in% poisson_res.sign.strict.select$mpmat_index
+) %>% select(
+  -mpmat_index
+)
+dim(mpmat_table.strict.select)
+
+write_tsv(mpmat_table.strict.select, file = "./final_list/293T-DdCBE-ND6.StrictList.mpmat", col_names = F)
+
+# lenient mpmat select 
+mpmat_table.lenient.select <- filter(
+  mpmat_table.AddIdx,
+  mpmat_index %in% poisson_res.sign.lenient.select$mpmat_index
+) %>% select(
+  -mpmat_index
+)
+dim(mpmat_table.lenient.select)
+
+write_tsv(mpmat_table.lenient.select, file = "./final_list/293T-DdCBE-ND6.LenientList.mpmat", col_names = F)
+```
+
+### 5.2 Query sequence alignment and results plot
+
+After finishing the previous steps, one can obtain significantly enriched tandem mutation signals of Detect-seq, indicating the off-target regions caused by cytosine base editors. Run the following commands if one want to further find putative sgRNA binding site (pRBS) or putative TALE-array binding site (pTBS) among these regions. 
+
+![An example plot of alignment results](./data/image/art-plot.png)
+
+```shell
+# reference genome FASTA file
+ref_genome_fa=reference/hisat3n_hg38_CT/hg38_only_chromosome.fa
+# find VEGFA_site2 pRBS
+python mpmat-to-art-sgRNA.py -i ./final_list/293T-BE4max-VEGFA.LenientList.mpmat -q GACCCCCTCCACCCCGCCTCNRG -r ${ref_genome_fa} -o ./final_list/293T-BE4max-VEGFA.LenientList.sgRNA_align.art \
+-m region -e 50 --input_header False \
+--mpmat_fwd_mut_type CT \
+--mpmat_rev_mut_type GA \
+--seed_index 15,20 \
+--align_settings 5,-4,-24,-8 \
+--PAM_type_penalty 0,8,12 \
+--dna_bulge_penalty 24,8 \
+--rna_bulge_penalty 24,8 \
+--dna_bulge_cmp_weight 1,24 \
+--rna_bulge_cmp_weight 1,24 \
+--mismatch_cmp_weight 10,2 \
+--dist_to_signal_penalty_k 0,0,0,0,0,0 \
+--dist_to_signal_penalty_offset 12,0,0,0,0,12 &
+
+# find ND6 left pTBS
+python mpmat-to-art-TALE.py -r ${ref_genome_fa} -i ./final_list/293T-DdCBE-ND6.LenientList.mpmat -q TGACCCCCATT -m region -e 50 --input_filetype mpmat --input_header False -o ./final_list/293T-DdCBE-ND6.LenientList.TALE_align.Left.art &
+
+# find ND6 right pTBS
+python mpmat-to-art-TALE.py -r ${ref_genome_fa} -i ./final_list/293T-DdCBE-ND6.LenientList.mpmat -q CGATGGCTATTT -m region -e 50 --input_filetype mpmat --input_header False -o ./final_list/293T-DdCBE-ND6.LenientList.TALE_align.Right.art &
+
+# plot VEGFA pRBS results
+python plot-art.py \
+-i ./final_list/293T-BE4max-VEGFA.LenientList.sgRNA_align.art \
+-o ./out_image/293T-BE4max-VEGFA.LenientList.sgRNA_align.pdf \
+--align_seq GACCCCCTCCACCCCGCCTCCGG \
+-k align_total_match,align_total_mismatch,align_total_gap,seed_mismatch -r False,True,True,True \
+-a align_coordinate,align_strand,align_total_mismatch,seed_mismatch,region_index &
+
+# plot ND6 left pTBS results
+python plot-art.py \
+-i ./final_list/293T-DdCBE-ND6.LenientList.TALE_align.Left.art \
+-o ./out_image/293T-DdCBE-ND6.LenientList.TALE_align.Left.pdf \
+--align_seq TGACCCCCATT \
+-k align_total_mismatch,align_degen_total_mismatch,align_total_gap -r True,True,True \
+-a align_coordinate,align_strand,align_total_mismatch,align_degen_total_mismatch,region_index &
+# plot ND6 right pTBS results
+python plot-art.py \
+-i ./final_list/293T-DdCBE-ND6.LenientList.TALE_align.Right.art \
+-o ./out_image/293T-DdCBE-ND6.LenientList.TALE_align.Right.pdf \
+--align_seq CGATGGCTATTT \
+-k align_total_mismatch,align_degen_total_mismatch,align_total_gap -r True,True,True \
+-a align_coordinate,align_strand,align_total_mismatch,align_degen_total_mismatch,region_index &
+```
