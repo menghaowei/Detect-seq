@@ -43,7 +43,6 @@ conda activate DetectSeq
 
 configuration about [Hisat-3n](https://github.com/DaehwanKimLab/hisat2/tree/hisat-3n)
 
-
 - - - - - -
 
 # The best practice of Detect-seq analysis
@@ -78,9 +77,9 @@ Detect-293T-DdCBE-GFP-PD_R2.fastq.gz
 
 ![A Schematic diagram](./data/image/pipeline.png)
 
-**ALL Scripts and Codes can be found at `/src/detect_seq`**
+**All Scripts and Codes can be found at `/src/detect_seq`**
 
-**ALL OUTPUT EXAMPLES can be found at `/data/example_results`**
+**All Output Examples can be found at `/data/example_results`**
 
 **We also offer a SnakeMake workflow at `/snakemake/`**
 
