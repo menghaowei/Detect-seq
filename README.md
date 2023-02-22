@@ -217,7 +217,7 @@ do
     out_bam=bam.hisat3n/${sample}_bwa_hg38_realign.bam
     bwa_log=bam.hisat3n/${sample}_bwa_hg38_realign.log
 
-    bwa mem ${bwa_index}${in_fq_R1} {in_fq_R2} -t 20 -M -R '@RG\tID:'${sample}'\tPL:ILLUMINA\tSM:'${sample} 2>${bwa_log} | samtools view -hb > ${out_bam} &
+    bwa mem ${bwa_index}${in_fq_R1} {in_fq_R2} -t 20 -M -R '@RG\tID:'${sample}'\tPL:ILLUMINA\tSM:'${sample} 2>${bwa_log} | samtools view -h -b -q 20 -f 3 -F 256 > ${out_bam} &
 done
 ```
 
@@ -296,12 +296,17 @@ python bam2pmat.py -i ${in_bam} -r ${ref_genome_fa} -o ${out_pmat} -p 20 --out_f
 
 done
 
+
+# select 
+
 # tracing tandem mutation signals
 for sample in 293T-BE4max-VEGFA-All-PD  293T-DdCBE-ND6-All-PD
 do  
     ref_genome_fa=reference/hisat3n_hg38_CT/hg38_only_chromosome.fa
-    in_C_pmat=pmat_and_mpmat/${sample}_hg38_merge_sort_rmdup.MAPQ20_C.pmat
-    in_G_pmat=pmat_and_mpmat/${sample}_hg38_merge_sort_rmdup.MAPQ20_G.pmat
+    in_pmat=pmat_and_mpmat/${sample}_hg38_merge_sort_rmdup.MAPQ20.pmat
+		out_C_pmat=pmat_and_mpmat/${sample}_hg38_merge_sort_rmdup.MAPQ20_C.pmat
+    out_G_pmat=pmat_and_mpmat/${sample}_hg38_merge_sort_rmdup.MAPQ20_G.pmat
+
 
     out_CT_mpmat=pmat_and_mpmat/${sample}_hg38.MAPQ20.merge_d50_D100.CT.mpmat
     out_GA_mpmat=pmat_and_mpmat/${sample}_hg38.MAPQ20.merge_d50_D100.GA.mpmat
@@ -309,10 +314,14 @@ do
     out_GA_log=pmat_and_mpmat/${sample}_hg38.MAPQ20.merge_d50_D100.GA.mpmat.log
 
     # CT on the Watson strand
-    python pmat-merge.py -i ${in_C_pmat} -f C -t T -r ${ref_genome_fa} -d 50 -D 100 --NoMutNumCutoff 2 --OmitTandemNumCutoff 2 -o ${out_CT_mpmat} --SNP snv_info/293T-snv_info.list1.bed,snv_info/293T-snv_info.list2.vcf 2> ${out_CT_log} &
+    awk '$10 == "C" {print $0}' ${in_pmat} > ${out_C_pmat} &
+    
+    python pmat-merge.py -i ${out_C_pmat} -f C -t T -r ${ref_genome_fa} -d 50 -D 100 --NoMutNumCutoff 2 --OmitTandemNumCutoff 2 -o ${out_CT_mpmat} --SNP snv_info/293T-snv_info.list1.bed,snv_info/293T-snv_info.list2.vcf 2> ${out_CT_log} &
     
     # CT on the Crick strand
-    python pmat-merge.py -i ${in_G_pmat} -f G -t A -r ${ref_genome_fa} -d 50 -D 100 --NoMutNumCutoff 2 --OmitTandemNumCutoff 2 -o ${out_GA_mpmat} --SNP snv_info/293T-snv_info.list1.bed,snv_info/293T-snv_info.list2.vcf 2> ${out_GA_log} &
+    awk '$10 == "G" {print $0}' ${in_pmat} > ${out_G_pmat} &
+    
+    python pmat-merge.py -i ${out_G_pmat} -f G -t A -r ${ref_genome_fa} -d 50 -D 100 --NoMutNumCutoff 2 --OmitTandemNumCutoff 2 -o ${out_GA_mpmat} --SNP snv_info/293T-snv_info.list1.bed,snv_info/293T-snv_info.list2.vcf 2> ${out_GA_log} &
 done
 
 # merge tandem mutation signals and sort
