@@ -396,6 +396,50 @@ python find-significant-mpmat.py -p 25 \
 2> poisson_res/293T-DdCBE-ND6-All-PD_vs_ctrl_hg38_possion_test.log &
 ```
 
+### doc for the output pvalue_table
+```text
+# An output example for the enrichment significance test results, this file is related to Figure 4 and Step 51.
+# header explaination 
+# chr_name, str, chromosome name of tested region, value like 'chr1', 'chr2' ...
+# region_start, int, the start coordinate of the tested region, and the coordinate index is based on a 1-based scale.
+# region_end, int, the end coordinate of the tested region, and the coordinate index is based on a 1-based scale.
+# mpmat_index, str, a formatted string, which can be used as a key to index the whole table.
+# region_site_num, int, number of sites (C or G) in the tested region
+# region_block_site_num, int, number of sites that present a mutation signal in the control sample (C-to-T or G-to-A). The blocked sites are omitted in the enrichment test step.
+# region_mut_site_num, int, number of sites with mutated signals in the treatment sample. Note, the blocked sites are not considered.
+# region_site_index, str list, split by comma, list length is the same as <region_site_num>, and each item in this list is the site coordinate of the genome.
+# region_block_state, str list, split by -, list length is the same as <region_site_num>, “B” means site is blocked, and "N" means site is not blocked.
+# region_highest_site_index, str, coordinate of site with the highest Detect-seq signal.
+# region_highest_site_mut_num, int, count of sequencing reads with tandem mutation info for the site with the highest Detect-seq signal.
+# region_highest_site_cover_num, int, total count of sequencing reads for the site with the highest Detect-seq signal.
+# region_highest_site_mut_ratio, float, range 0~1, mutation ratio, which equals <region_highest_site_mut_num> / <region_highest_site_cover_num>
+# ctrl_count, int, total count of sequencing reads in the control sample; if a read overlaps with the tested region, it will be counted.
+# treat_count, int, total count of sequencing reads in treat sample.
+# ctrl_mut_count, int, count of sequencing reads with C-to-T / G-to-A mutation info in control sample.
+# treat_mut_count, int, count of sequencing reads with C-to-T / G-to-A mutation info in treat sample.
+# ctrl_count.norm, float, normalized <ctrl_count>, the default value equals count per million.
+# treat_count.norm, float, normalized <treat_count>, the default value equals count per million.
+# ctrl_mut_count.norm, float, normalized <ctrl_mut_count>, the default value equals count per million.
+# treat_mut_count.norm, float, normalized <treat_mut_count>, the default value equals count per million.
+# count_info, meaning less in this version.
+# log2_FC, float, log2 fold-change, which equals log2(<treat_count.norm> / <ctrl_count.norm>)
+# log2_FC_mut, float, log2 fold-change, which equals log2(<treat_mut_count.norm> / <ctrl_mut_count.norm>)
+# test_state, str, "TestOK" means the Poisson enrichment test works well.
+# p_value, float, the p-value from the Poisson enrichment test.
+# FDR, float, adjusted p-value with BH methods.																			
+chr_name	region_start	region_end	mpmat_index	region_site_num	region_block_site_num	region_mut_site_num	region_site_index	region_block_state	region_highest_site_index	region_highest_site_mut_num	region_highest_site_cover_num	region_highest_site_mut_ratio	ctrl_count	treat_count	ctrl_mut_count	treat_mut_count	ctrl_count.norm	treat_count.norm	ctrl_mut_count.norm	treat_mut_count.norm	count_info	log2_FC	log2_FC_mut	test_state	p_value	FDR
+chr1	49272	49288	chr1_49272_49288	3	1	2	"chr1_49272_GA,chr1_49276_G.,chr1_49288_GA"	B-N-N	chr1_49288_GA	1	5	0.2	11	10	0	0	0.080257214	0.051644633	0	0	"0,1,2,3 10,1,0,0 9,1,0,0"	-0.63601266	NA	TestOK	0.5	0.511034942
+chr1	49515	49529	chr1_49515_49529	3	0	3	"chr1_49515_GA,chr1_49521_G.,chr1_49529_GA"	N-N-N	chr1_49515_GA	1	3	0.333333333	9	12	1	1	0.065664993	0.061973559	0.00729611	0.005164463	"0,1,2,3 0,8,1,0 3,8,1,0"	-0.083471637	-0.498509136	TestOK	0.5	0.511034942
+chr1	73840	73842	chr1_73840_73842	3	1	2	"chr1_73840_CT,chr1_73841_CT,chr1_73842_CT"	N-B-N	chr1_73840_CT	1	16	0.0625	16	22	0	0	0.116737766	0.113618192	0	0	"0,1,2,3 13,3,0,0 20,2,0,0"	-0.039077518	NA	TestOK	0.5	0.511034942
+chr1	99045	99092	chr1_99045_99092	10	0	10	"chr1_99045_CT,chr1_99046_CT,chr1_99055_CT,chr1_99059_CT,chr1_99061_CT,chr1_99069_CT,chr1_99072_CT,chr1_99083_CT,chr1_99088_CT,chr1_99092_CT"	N-N-N-N-N-N-N-N-N-N	chr1_99045_CT	1	6	0.166666667	18	14	9	7	0.131329987	0.072302486	0.065664993	0.036151243	"0,1,2,3,4,5,6,7,8,9,10 7,1,2,1,0,2,1,0,1,0,3 7,0,2,0,0,0,1,2,0,0,2"	-0.861079216	-0.861079216	TestOK	0.687775284	0.699676496
+chr1	144871	144900	chr1_144871_144900	4	0	4	"chr1_144871_GA,chr1_144873_GA,chr1_144875_GA,chr1_144900_GA"	N-N-N-N	chr1_144871_GA	2	10	0.2	7	15	1	3	0.051072773	0.077466949	0.00729611	0.01549339	"0,1,2,3,4 1,5,0,1,0 5,7,0,3,0"	0.601026537	1.086453364	TestOK	0.173669361	0.32172689
+chr1	184167	184193	chr1_184167_184193	9	0	9	"chr1_184167_GA,chr1_184168_GA,chr1_184170_GA,chr1_184176_GA,chr1_184177_GA,chr1_184178_GA,chr1_184185_GA,chr1_184188_GA,chr1_184193_GA"	N-N-N-N-N-N-N-N-N	chr1_184167_GA	4	24	0.166666667	19	33	0	4	0.138626097	0.170427288	0	0.020657853	"0,1,2,3,4,5,6,7,8,9 15,4,0,0,0,0,0,0,0,0 27,2,2,0,0,1,0,0,0,1"	0.29795747	1.130606173	TestOK	0.01821861	0.094641139
+chr1	191997	192025	chr1_191997_192025	3	1	2	"chr1_191997_GA,chr1_192015_G.,chr1_192025_GA"	N-N-B	chr1_191997_GA	1	14	0.071428571	7	16	0	0	0.051072773	0.082631412	0	0	"0,1,2,3 7,0,0,0 14,2,0,0"	0.694135942	NA	TestOK	0.5	0.511034942
+chr1	271391	271413	chr1_271391_271413	5	2	3	"chr1_271391_CT,chr1_271396_CT,chr1_271401_CT,chr1_271406_CT,chr1_271413_CT"	N-N-S-S-N	chr1_271391_CT	1	7	0.142857143	5	13	0	2	0.036480552	0.067138022	0	0.010328927	"0,1,2,3,4,5 4,1,0,0,0,0 5,6,1,1,0,0"	0.880002487	0.130606173	TestOK	0.094520046	0.209966519
+...
+```
+
+
 ## 5. Criteria selection and downstream analysis
 
 ### 5.1 Criteria for selection of significant Detect-seq signals
