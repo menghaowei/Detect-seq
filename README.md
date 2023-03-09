@@ -396,37 +396,42 @@ python find-significant-mpmat.py -p 25 \
 2> poisson_res/293T-DdCBE-ND6-All-PD_vs_ctrl_hg38_possion_test.log &
 ```
 
-### doc for the output pvalue_table
+### doc for the output `pvalue_table`
+
+An output example for the enrichment significance test results.
+
+#### header explaination 
+
+- `chr_name`: str, chromosome name of tested region, value like 'chr1', 'chr2' ...
+- `region_start`: int, the start coordinate of the tested region, and the coordinate index is based on a 1-based scale.
+- `region_end`: int, the end coordinate of the tested region, and the coordinate index is based on a 1-based scale.
+- `mpmat_index`: str, a formatted string, which can be used as a key to index the whole table.
+- `region_site_num`: int, number of sites (C or G) in the tested region
+- `region_block_site_num`: int, number of sites that present a mutation signal in the control sample (C-to-T or G-to-A). The blocked sites are omitted in the enrichment test step.
+- `region_mut_site_num`: int, number of sites with mutated signals in the treatment sample. Note, the blocked sites are not considered.
+- `region_site_index`: str list, split by comma, list length is the same as <region_site_num>, and each item in this list is the site coordinate of the genome.
+- `region_block_state`: str list, split by -, list length is the same as <region_site_num>, “B” means site is blocked, and "N" means site is not blocked.
+- `region_highest_site_index`: str, coordinate of site with the highest Detect-seq signal.
+- `region_highest_site_mut_num`: int, count of sequencing reads with tandem mutation info for the site with the highest Detect-seq signal.
+- `region_highest_site_cover_num`: int, total count of sequencing reads for the site with the highest Detect-seq signal.
+- `region_highest_site_mut_ratio`: float, range 0~1, mutation ratio, which equals <region_highest_site_mut_num> / <region_highest_site_cover_num>
+- `ctrl_count`: int, total count of sequencing reads in the control sample; if a read overlaps with the tested region, it will be counted.
+- `treat_count`: int, total count of sequencing reads in treat sample.
+- `ctrl_mut_count`: int, count of sequencing reads with C-to-T / G-to-A mutation info in control sample.
+- `treat_mut_count`: int, count of sequencing reads with C-to-T / G-to-A mutation info in treat sample.
+- `ctrl_count.nor`:, float, normalized <ctrl_count>, the default value equals count per million.
+- `treat_count.nor`:, float, normalized <treat_count>, the default value equals count per million.
+- `ctrl_mut_count.nor`:, float, normalized <ctrl_mut_count>, the default value equals count per million.
+- `treat_mut_count.nor`:, float, normalized <treat_mut_count>, the default value equals count per million.
+- `count_info`: meaning less in this version.
+- `log2_FC`: float, log2 fold-change, which equals log2(<treat_count.norm> / <ctrl_count.norm>)
+- `log2_FC_mut`: float, log2 fold-change, which equals log2(<treat_mut_count.norm> / <ctrl_mut_count.norm>)
+- `test_state`: str, "TestOK" means the Poisson enrichment test works well.
+- `p_value`: float, the p-value from the Poisson enrichment test.
+- `FDR`: float, adjusted p-value with BH methods.			
+
 ```text
-# An output example for the enrichment significance test results, this file is related to Figure 4 and Step 51.
-# header explaination 
-# chr_name, str, chromosome name of tested region, value like 'chr1', 'chr2' ...
-# region_start, int, the start coordinate of the tested region, and the coordinate index is based on a 1-based scale.
-# region_end, int, the end coordinate of the tested region, and the coordinate index is based on a 1-based scale.
-# mpmat_index, str, a formatted string, which can be used as a key to index the whole table.
-# region_site_num, int, number of sites (C or G) in the tested region
-# region_block_site_num, int, number of sites that present a mutation signal in the control sample (C-to-T or G-to-A). The blocked sites are omitted in the enrichment test step.
-# region_mut_site_num, int, number of sites with mutated signals in the treatment sample. Note, the blocked sites are not considered.
-# region_site_index, str list, split by comma, list length is the same as <region_site_num>, and each item in this list is the site coordinate of the genome.
-# region_block_state, str list, split by -, list length is the same as <region_site_num>, “B” means site is blocked, and "N" means site is not blocked.
-# region_highest_site_index, str, coordinate of site with the highest Detect-seq signal.
-# region_highest_site_mut_num, int, count of sequencing reads with tandem mutation info for the site with the highest Detect-seq signal.
-# region_highest_site_cover_num, int, total count of sequencing reads for the site with the highest Detect-seq signal.
-# region_highest_site_mut_ratio, float, range 0~1, mutation ratio, which equals <region_highest_site_mut_num> / <region_highest_site_cover_num>
-# ctrl_count, int, total count of sequencing reads in the control sample; if a read overlaps with the tested region, it will be counted.
-# treat_count, int, total count of sequencing reads in treat sample.
-# ctrl_mut_count, int, count of sequencing reads with C-to-T / G-to-A mutation info in control sample.
-# treat_mut_count, int, count of sequencing reads with C-to-T / G-to-A mutation info in treat sample.
-# ctrl_count.norm, float, normalized <ctrl_count>, the default value equals count per million.
-# treat_count.norm, float, normalized <treat_count>, the default value equals count per million.
-# ctrl_mut_count.norm, float, normalized <ctrl_mut_count>, the default value equals count per million.
-# treat_mut_count.norm, float, normalized <treat_mut_count>, the default value equals count per million.
-# count_info, meaning less in this version.
-# log2_FC, float, log2 fold-change, which equals log2(<treat_count.norm> / <ctrl_count.norm>)
-# log2_FC_mut, float, log2 fold-change, which equals log2(<treat_mut_count.norm> / <ctrl_mut_count.norm>)
-# test_state, str, "TestOK" means the Poisson enrichment test works well.
-# p_value, float, the p-value from the Poisson enrichment test.
-# FDR, float, adjusted p-value with BH methods.																			
+																
 chr_name	region_start	region_end	mpmat_index	region_site_num	region_block_site_num	region_mut_site_num	region_site_index	region_block_state	region_highest_site_index	region_highest_site_mut_num	region_highest_site_cover_num	region_highest_site_mut_ratio	ctrl_count	treat_count	ctrl_mut_count	treat_mut_count	ctrl_count.norm	treat_count.norm	ctrl_mut_count.norm	treat_mut_count.norm	count_info	log2_FC	log2_FC_mut	test_state	p_value	FDR
 chr1	49272	49288	chr1_49272_49288	3	1	2	"chr1_49272_GA,chr1_49276_G.,chr1_49288_GA"	B-N-N	chr1_49288_GA	1	5	0.2	11	10	0	0	0.080257214	0.051644633	0	0	"0,1,2,3 10,1,0,0 9,1,0,0"	-0.63601266	NA	TestOK	0.5	0.511034942
 chr1	49515	49529	chr1_49515_49529	3	0	3	"chr1_49515_GA,chr1_49521_G.,chr1_49529_GA"	N-N-N	chr1_49515_GA	1	3	0.333333333	9	12	1	1	0.065664993	0.061973559	0.00729611	0.005164463	"0,1,2,3 0,8,1,0 3,8,1,0"	-0.083471637	-0.498509136	TestOK	0.5	0.511034942
